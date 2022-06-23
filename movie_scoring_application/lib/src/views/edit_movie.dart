@@ -186,9 +186,15 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
     // Want these to stay "local" for the moment
     var inputCursorColor = Colors.black;
     var inputBorderColor = Colors.white;
-    var inputDecoration = const InputDecoration(
+    var inputDecoration = InputDecoration(
       filled: true,
-      border: InputBorder.none,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5.0),
+        borderSide: const BorderSide(
+          width: 0,
+          style: BorderStyle.none,
+        ),
+      ),
       fillColor: Colors.white,
     );
 

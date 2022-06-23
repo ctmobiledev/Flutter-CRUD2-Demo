@@ -75,8 +75,8 @@ class _MainPageState extends State<MainPage> {
     MovieRepository.realmMovies = MovieRepository.realm.all<MovieModel>();
 
     // Comment out these lines to start with a clean database.
-    MovieRepository.deleteAllMovies();
-    generateTestData();
+    //MovieRepository.deleteAllMovies();
+    //generateTestData();
 
     refreshMovies();
   }
@@ -115,6 +115,43 @@ class _MainPageState extends State<MainPage> {
     Future.delayed(const Duration(seconds: 1), () => showMessageIfNoEntries());
   }
 
+  // Would need to restructure to allow onPressed to
+  // fire an action
+  Future<void> showConfirmDeleteDialog(
+      String msgText, BuildContext buildContext) async {
+    showDialog<String>(
+      // <String> is the data type returned
+      context: buildContext,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(Constants.dialogAppTitle),
+        content: Text(msgText),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, 'Y');
+            },
+            child: const Text('Yes, Delete All'),
+          ),
+          TextButton(
+            onPressed: () {
+              // Stay
+              Navigator.pop(context, 'N');
+            },
+            child: const Text('No, Cancel'),
+          ),
+        ],
+      ),
+      // don't really use the 'value' passed next to context at this point
+    ).then((value) {
+      print(">>> value is $value");
+      if (value == 'Y') {
+        setState(() {
+          MovieRepository.deleteAllMovies();
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     print(">>> MainPage/StatefulWidget - build() fired");
@@ -134,30 +171,38 @@ class _MainPageState extends State<MainPage> {
               ),
               PopupMenuItem<int>(
                 value: 2,
+                child: Text("Clear All Movies"),
+              ),
+              PopupMenuItem<int>(
+                value: 3,
                 child: Text("About This App"),
               ),
             ];
           }, onSelected: (value) {
             if (value == 0) {
+              print(">>> New Movie");
               // inx of -1 = New, inx > 0 = Edit
               Navigator.pushNamed(
                 context,
                 EditMovieWidget.routeName,
                 arguments: EditMovieArgs(-1),
               ).whenComplete(() => refreshMovies());
-              print(">>> New Movie");
             } else if (value == 1) {
+              print(">>> Settings");
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsWidget()),
               );
-              print(">>> Settings");
             } else if (value == 2) {
+              print(">>> Clear All Movies");
+              showConfirmDeleteDialog(
+                  "This will delete all movie entries. Are you sure?", context);
+            } else if (value == 3) {
+              print(">>> About");
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AboutAppWidget()),
               );
-              print(">>> About");
             }
           }),
         ],
