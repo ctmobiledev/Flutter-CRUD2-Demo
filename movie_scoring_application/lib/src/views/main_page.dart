@@ -6,10 +6,10 @@ import 'package:realm/realm.dart';
 
 import '../viewmodels/main_viewmodel.dart';
 
-import '../views/about.dart';
-import '../views/edit_movie.dart';
-import '../views/edit_movie_args.dart';
-import '../views/settings.dart';
+import 'about_page.dart';
+import 'edit_movie_page.dart';
+import 'edit_movie_page_args.dart';
+import 'settings_page.dart';
 
 import '../models/movie_model.dart';
 import '../models/movie_repository.dart';
@@ -141,7 +141,6 @@ class _MainPageState extends State<MainPage> {
                               var inx = MovieRepository.realmMovies[index].id;
                               print(
                                   ">>> NAVIGATE TO EDIT SCREEN - tapped inx = $inx");
-                              //showAlertDialog(item, context);
                               Navigator.pushNamed(
                                 context,
                                 EditMovieWidget.routeName,

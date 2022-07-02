@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'movie_model.dart';
 import '../util/constants.dart';
@@ -23,7 +22,7 @@ class MovieRepository {
   static late RealmResults<MovieModel> realmMovies;
 
   // Entries DB
-  static List<Map<String, dynamic>> moodEntries = [];
+  static List<Map<String, dynamic>> movieEntries = [];
 
   MovieRepository() {
     print(">>> MovieRepository constructor() fired");
@@ -56,7 +55,7 @@ class MovieRepository {
     // fail silently.
 
     try {
-      var newMoodEvent = MovieModel(
+      var newMovie = MovieModel(
           id: idDateInMs,
           movieTitle: pMovieTitle,
           entryTimestamp: DateTime.now().toString(),
@@ -66,17 +65,42 @@ class MovieRepository {
 
       // 'write' method wraps all Realm operations
       realm.write(() {
-        realm.add(newMoodEvent);
+        realm.add(newMovie);
       });
       print(">>> insertion completed for $pMovieTitle, id value = $idDateInMs");
       return "OK";
     } catch (ex, stk) {
       // Pass back any error conditions in non-widget classes, let the Widgets dispatch
       // the results
-      print(">>> createMoodEvent Exception: $ex");
+      print(">>> createMovie Exception: $ex");
       print(">>> Stack: $stk");
       return ex.toString();
     }
+  }
+
+  static void updateMovie(
+      int updateId, String newTitle, String newGenre, String newScore) {
+    var movieModelToUpdate = MovieRepository.realmMovies
+        .firstWhere((element) => element.id == updateId);
+    print(">>> updateMovie - entry found with id = $updateId");
+
+    MovieRepository.realm.write(() {
+      movieModelToUpdate.movieTitle = newTitle.trim();
+      movieModelToUpdate.movieGenre = newGenre.trim();
+      int? score = int.parse(newScore);
+      movieModelToUpdate.movieScore = score;
+    });
+  }
+
+  static void deleteMovie(int deleteId) {
+    var movieModelToDelete = MovieRepository.realmMovies
+        .firstWhere((element) => element.id == deleteId);
+    print(">>> deleteMovie - entry found with id = $deleteId");
+    // no refresh of this UI needed; we're leaving
+
+    MovieRepository.realm.write(() {
+      MovieRepository.realm.delete(movieModelToDelete);
+    });
   }
 
   static void deleteAllMovies() {
@@ -85,33 +109,6 @@ class MovieRepository {
       realm.deleteAll<MovieModel>();
     });
 
-    print(">>> deleteAllMoodEvents completed");
-  }
-
-  //
-  // Update and Delete operations are in the Edit screen
-  // Operations are a little more natural there and don't
-  // require a cramped approach to separating the layers.
-  //
-
-  // issues with DialogHelper
-
-  static Future<void> showAlertDialog(
-      String msgText, BuildContext buildContext) async {
-    showDialog<String>(
-      context: buildContext,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('CRUD Application'),
-        content: Text(msgText),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context, 'OK');
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    print(">>> deleteAllMovies completed");
   }
 }

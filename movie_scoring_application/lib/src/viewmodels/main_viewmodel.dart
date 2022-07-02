@@ -1,8 +1,10 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+
 import '../models/movie_model.dart';
 import '../models/movie_repository.dart';
+
 import '../util/constants.dart';
 import '../util/dialog_helpers.dart';
 
@@ -19,11 +21,15 @@ class MainViewModel extends ChangeNotifier {
     MovieRepository.realmMovies = MovieRepository.getMovies();
     notifyListeners();
 
-    Future.delayed(
-        const Duration(seconds: 1), () => showMessageIfNoEntries(context));
+    showMessageIfNoEntries(context);
   }
 
   void showMessageIfNoEntries(BuildContext context) {
+    Future.delayed(
+        const Duration(seconds: 1), () => checkForEmptyList(context));
+  }
+
+  void checkForEmptyList(BuildContext context) {
     if (MovieRepository.realmMovies.isEmpty) {
       DialogHelpers.showAlertDialog("No movies entered.", context);
     }
@@ -59,6 +65,7 @@ class MainViewModel extends ChangeNotifier {
       if (value == 'Y') {
         MovieRepository.deleteAllMovies();
         notifyListeners();
+        showMessageIfNoEntries(buildContext);
       }
     });
   }

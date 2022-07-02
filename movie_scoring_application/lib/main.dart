@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 
 import 'src/util/constants.dart';
-import 'src/views/edit_movie.dart';
+import 'src/views/edit_movie_page.dart';
 import 'src/views/main_page.dart';
 
 void main() {
