@@ -1,9 +1,9 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'edit_movie_args.dart';
 import '../util/constants.dart';
 import '../util/dialog_helpers.dart';
-import 'edit_movie_args.dart';
 import '../models/movie_repository.dart';
 
 class EditMovieWidget extends StatefulWidget {
@@ -183,41 +183,6 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
       });
     }
 
-    // Want these to stay "local" for the moment
-    var inputCursorColor = Colors.black;
-    var inputBorderColor = Colors.white;
-    var inputDecoration = InputDecoration(
-      filled: true,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5.0),
-        borderSide: const BorderSide(
-          width: 0,
-          style: BorderStyle.none,
-        ),
-      ),
-      fillColor: Colors.white,
-    );
-
-    var closeButtonStyle = ElevatedButton.styleFrom(
-        textStyle: Constants.defaultTextStyle,
-        primary: Colors.black,
-        fixedSize: const Size(100.0, 50.0));
-
-    var redButtonStyle = ElevatedButton.styleFrom(
-        textStyle: Constants.defaultTextStyle,
-        primary: Colors.red,
-        fixedSize: const Size(100.0, 50.0));
-
-    var redButtonDisabledStyle = ElevatedButton.styleFrom(
-        textStyle: Constants.defaultTextStyle,
-        primary: Colors.grey,
-        fixedSize: const Size(100.0, 50.0));
-
-    var greenButtonStyle = ElevatedButton.styleFrom(
-        textStyle: Constants.defaultTextStyle,
-        primary: Colors.green,
-        fixedSize: const Size(100.0, 50.0));
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -255,8 +220,8 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
                         child: TextField(
                           textCapitalization: TextCapitalization.words,
                           controller: txtMovieTitle,
-                          decoration: inputDecoration,
-                          cursorColor: inputCursorColor,
+                          decoration: Constants.inputDecoration,
+                          cursorColor: Constants.inputCursorColor,
                           style: Constants.blackTextStyle,
                         ),
                       ),
@@ -272,8 +237,8 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
                         child: TextField(
                           textCapitalization: TextCapitalization.words,
                           controller: txtMovieGenre,
-                          decoration: inputDecoration,
-                          cursorColor: inputCursorColor,
+                          decoration: Constants.inputDecoration,
+                          cursorColor: Constants.inputCursorColor,
                           style: Constants.blackTextStyle,
                         ),
                       ),
@@ -289,8 +254,8 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
                         child: TextField(
                           keyboardType: TextInputType.number,
                           controller: txtMovieScore,
-                          decoration: inputDecoration,
-                          cursorColor: inputCursorColor,
+                          decoration: Constants.inputDecoration,
+                          cursorColor: Constants.inputCursorColor,
                           style: Constants.blackTextStyle,
                         ),
                       ),
@@ -307,7 +272,7 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      style: greenButtonStyle,
+                      style: Constants.greenButtonStyle,
                       onPressed: () async {
                         if (args.movieId == -1) {
                           var result = await createNewMovie();
@@ -324,7 +289,7 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
                       child: Text('Save', style: Constants.buttonTextStyle),
                     ),
                     ElevatedButton(
-                      style: closeButtonStyle,
+                      style: Constants.closeButtonStyle,
                       onPressed: () {
                         Navigator.pop(context);
                       },
@@ -332,8 +297,8 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
                     ),
                     ElevatedButton(
                       style: (args.movieId == -1)
-                          ? redButtonDisabledStyle
-                          : redButtonStyle,
+                          ? Constants.redButtonDisabledStyle
+                          : Constants.redButtonStyle,
                       onPressed: () {
                         print(">>> Delete button pressed");
                         if (args.movieId > -1) {
