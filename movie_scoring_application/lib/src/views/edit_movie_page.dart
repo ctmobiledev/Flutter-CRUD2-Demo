@@ -122,11 +122,12 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
                         ),
                       ),
                       Container(
+                        height: 60.0,
                         margin: const EdgeInsets.only(bottom: 20.0),
                         child: StatefulBuilder(builder: (context, setState) {
                           return Container(
-                            padding:
-                                const EdgeInsets.only(left: 10.0, right: 10.0),
+                            padding: const EdgeInsets.only(
+                                left: 10.0, right: 10.0, top: 4.0),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(5.0),
