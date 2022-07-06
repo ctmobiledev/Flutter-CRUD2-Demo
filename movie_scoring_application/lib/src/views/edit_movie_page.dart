@@ -29,6 +29,9 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
   static var txtMovieTitle = TextEditingController();
   static var txtMovieGenre = TextEditingController();
   static var txtMovieScore = TextEditingController();
+
+  String dropdownValue = 'Comedy';
+
   //
   EditMovieViewModel editMovieVM =
       EditMovieViewModel(txtMovieTitle, txtMovieGenre, txtMovieScore);
@@ -120,13 +123,38 @@ class _EditMovieWidgetState extends State<EditMovieWidget> {
                       ),
                       Container(
                         margin: const EdgeInsets.only(bottom: 20.0),
-                        child: TextField(
-                          textCapitalization: TextCapitalization.words,
-                          controller: txtMovieGenre,
-                          decoration: Constants.inputDecoration,
-                          cursorColor: Constants.inputCursorColor,
-                          style: Constants.blackTextStyle,
-                        ),
+                        child: StatefulBuilder(builder: (context, setState) {
+                          return DropdownButton(
+                              // declared above, was dropdownValue
+                              value: editMovieVM.selectedGenre,
+                              items: Constants.movieGenres
+                                  .map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                print(
+                                    ">>> DropdownMenuItem before return: ${value.toString()}");
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                              onChanged: (String? value) {
+                                // Flaw with Flutter: handling drop-down controls like this.
+                                // Should be simple but even with a ChangeNotifier in the VM,
+                                // setState() is still needed here to "hear" a new value for
+                                // a drop-down selection.
+                                //
+                                // Why does this clear the other two text fields?
+                                // Not wrapped inside a StatefulBuilder, apparently
+                                //
+                                dropdownValue = value!;
+                                editMovieVM.selectedGenre = value;
+                                print(">>> new value is $dropdownValue");
+                                setState(() {
+                                  editMovieVM
+                                      .updateGenreDropdown(dropdownValue);
+                                });
+                              });
+                        }),
                       ),
                       Container(
                         margin: const EdgeInsets.only(bottom: 10.0),

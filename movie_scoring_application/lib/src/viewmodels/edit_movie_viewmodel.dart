@@ -10,6 +10,11 @@ import '../util/dialog_helpers.dart';
 class EditMovieViewModel extends ChangeNotifier {
   MovieModel movieModel = MovieModel();
 
+  // This cannot be null or blank, or compiler says, "Hey! I don't see that value in the list!"
+  // When doing an insertion to Realm, read this value,
+  // not the text controller from before.
+  String selectedGenre = Constants.movieGenres[0];
+
   // This is as close as we get to bound UI controls - they had to be
   // passed in, in this clumsy way
   //
@@ -88,7 +93,9 @@ class EditMovieViewModel extends ChangeNotifier {
       int score = int.parse(_txtMovieScore.text);
 
       result = MovieRepository.createMovie(
-          _txtMovieTitle.text.trim(), score, _txtMovieGenre.text.trim());
+          _txtMovieTitle.text.trim(), score, selectedGenre);
+      //result = MovieRepository.createMovie(
+      //    _txtMovieTitle.text.trim(), score, _txtMovieGenre.text.trim());
       print(">>> result from MovieRepository.createNewMovie = $result");
       if (result != "OK") {
         validationResultCode = 99;
@@ -162,6 +169,8 @@ class EditMovieViewModel extends ChangeNotifier {
   void fillInputFields(MovieModel movieModel) {
     _txtMovieTitle.text = movieModel.movieTitle.toString();
     _txtMovieGenre.text = movieModel.movieGenre.toString();
+    selectedGenre =
+        movieModel.movieGenre.toString(); // for the drop-down button
     _txtMovieScore.text = movieModel.movieScore.toString();
     notifyListeners();
   }
@@ -170,6 +179,13 @@ class EditMovieViewModel extends ChangeNotifier {
     _txtMovieTitle.clear();
     _txtMovieGenre.clear();
     _txtMovieScore.clear();
+    notifyListeners();
+  }
+
+  void updateGenreDropdown(String selectedValue) {
+    print(">>> updateGenreDropdown, selectedValue = $selectedValue");
+    _txtMovieGenre.text = selectedValue;
+    selectedGenre = selectedValue;
     notifyListeners();
   }
 }
