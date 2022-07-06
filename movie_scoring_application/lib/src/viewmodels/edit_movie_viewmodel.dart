@@ -19,15 +19,14 @@ class EditMovieViewModel extends ChangeNotifier {
   // passed in, in this clumsy way
   //
   TextEditingController _txtMovieTitle = TextEditingController();
-  TextEditingController _txtMovieGenre = TextEditingController();
   TextEditingController _txtMovieScore = TextEditingController();
 
-  EditMovieViewModel(
-      TextEditingController txtMovieTitle,
-      TextEditingController txtMovieGenre,
+  // The TextEditingController for the genre has been replaced with
+  // a DropDownButton.
+
+  EditMovieViewModel(TextEditingController txtMovieTitle,
       TextEditingController txtMovieScore) {
     _txtMovieTitle = txtMovieTitle;
-    _txtMovieGenre = txtMovieGenre;
     _txtMovieScore = txtMovieScore;
   }
 
@@ -41,9 +40,8 @@ class EditMovieViewModel extends ChangeNotifier {
     if (_txtMovieTitle.text.trim().isEmpty) {
       result = 1;
     }
-    if (_txtMovieGenre.text.trim().isEmpty) {
-      result = 1;
-    }
+    // Genre doesn't have to be validated because it's one choice
+    // from a pre-set array. (How will combo boxes be done?)
     if (_txtMovieScore.text.trim().isEmpty) {
       result = 1;
     }
@@ -116,8 +114,8 @@ class EditMovieViewModel extends ChangeNotifier {
 
     int validationResultCode = validateInputs(context);
     if (validationResultCode == 0) {
-      MovieRepository.updateMovie(updateId, _txtMovieTitle.text,
-          _txtMovieGenre.text, _txtMovieScore.text);
+      MovieRepository.updateMovie(
+          updateId, _txtMovieTitle.text, selectedGenre, _txtMovieScore.text);
 
       notifyListeners();
       //
@@ -168,7 +166,6 @@ class EditMovieViewModel extends ChangeNotifier {
 
   void fillInputFields(MovieModel movieModel) {
     _txtMovieTitle.text = movieModel.movieTitle.toString();
-    _txtMovieGenre.text = movieModel.movieGenre.toString();
     selectedGenre =
         movieModel.movieGenre.toString(); // for the drop-down button
     _txtMovieScore.text = movieModel.movieScore.toString();
@@ -177,15 +174,14 @@ class EditMovieViewModel extends ChangeNotifier {
 
   void clearInputFields() {
     _txtMovieTitle.clear();
-    _txtMovieGenre.clear();
     _txtMovieScore.clear();
+    // Genre is reset to index 0 each call to "new" item.
     notifyListeners();
   }
 
   void updateGenreDropdown(String selectedValue) {
     print(">>> updateGenreDropdown, selectedValue = $selectedValue");
-    _txtMovieGenre.text = selectedValue;
     selectedGenre = selectedValue;
-    notifyListeners();
+    notifyListeners(); //        this may be unnecessary since setState() still records selections
   }
 }
