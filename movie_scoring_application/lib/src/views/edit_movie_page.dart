@@ -73,6 +73,11 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
       // Fill the text controllers
       txtMovieTitle.text = movieModelValues.movieTitle.toString();
       txtMovieScore.text = movieModelValues.movieScore.toString();
+
+      // And set the dropdown
+      editMovieVM.strMovieGenreSelected =
+          movieModelValues.movieGenre.toString();
+
     } else {
       // no index found (movieId == -1); start with blank fields
       editMovieVM.clearInputFields();
