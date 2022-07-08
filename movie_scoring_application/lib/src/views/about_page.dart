@@ -34,8 +34,9 @@ class AboutAppWidget extends StatelessWidget {
                   children: const [
                     SizedBox(
                       child: Text(
-                        'Author: Charles Tatum II'
-                        '\n\n'
+                        'Author: Charles Tatum II\n\n'
+                        'Open Sans fonts used in this project are licensed under the Apache License, Version 2.0.\n\n'
+                        'https://www.apache.org/licenses/LICENSE-2.0\n\n'
                         'Put explanatory text about the app here.\n\n'
                         'Put explanatory text about the app here.\n\n'
                         'Put explanatory text about the app here.\n\n'

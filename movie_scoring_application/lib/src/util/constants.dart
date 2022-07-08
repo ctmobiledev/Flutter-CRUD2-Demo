@@ -22,7 +22,10 @@ class Constants {
       const TextStyle(color: Colors.white, fontSize: 16.0);
 
   static TextStyle buttonTextStyle = const TextStyle(
-      color: Colors.white, fontSize: 16.0, fontWeight: FontWeight.bold);
+      color: Colors.white,
+      fontSize: 16.0,
+      fontWeight: FontWeight.bold,
+      fontFamily: 'OpenSans');
 
   static TextStyle blackTextStyle =
       const TextStyle(color: Colors.black, fontSize: 16.0);

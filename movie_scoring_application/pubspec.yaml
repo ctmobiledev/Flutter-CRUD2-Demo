@@ -91,3 +91,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+  fonts:
+     - family: OpenSans
+       fonts:
+         - asset: fonts/OpenSans-Regular.ttf
+         - asset: fonts/OpenSans-Italic.ttf
+           style: italic
+         - asset: fonts/OpenSans-Bold.ttf
+           weight: 500

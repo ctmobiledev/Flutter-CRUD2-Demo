@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 
 import 'src/util/constants.dart';
 import 'src/views/edit_movie_page.dart';
-import 'src/views/main_page.dart';
+import 'src/views/home_page.dart';
 
 void main() {
   print(">>> main() fired");
+
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MovieRatingApp());
 }
 
@@ -19,7 +21,7 @@ class MovieRatingApp extends StatelessWidget {
   Widget build(BuildContext context) {
     print(">>> MovieRatingApp/StatelessWidget - build() fired");
     return MaterialApp(
-      home: MainPage(title: Constants.dialogAppTitle), // main_page.dart
+      home: HomePage(title: Constants.dialogAppTitle), // main_page.dart
       title: Constants.dialogAppTitle,
       initialRoute: '/',
       routes: {
@@ -27,6 +29,7 @@ class MovieRatingApp extends StatelessWidget {
       },
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'OpenSans',
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.blue,
       ),

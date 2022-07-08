@@ -41,7 +41,10 @@ class MainViewModel extends ChangeNotifier {
       // <String> is the data type returned
       context: buildContext,
       builder: (BuildContext context) => AlertDialog(
-        title: Text(Constants.dialogAppTitle),
+        title: Text(
+          Constants.dialogAppTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: Text(msgText),
         actions: <Widget>[
           TextButton(

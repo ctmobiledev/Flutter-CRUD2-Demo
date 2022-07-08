@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/views/edit_movie_page.dart';
 
 import '../models/movie_model.dart';
 import '../models/movie_repository.dart';
@@ -11,24 +12,16 @@ class EditMovieViewModel extends ChangeNotifier {
   MovieModel movieModel = MovieModel();
 
   // This cannot be null or blank, or compiler says, "Hey! I don't see that value in the list!"
-  // When doing an insertion to Realm, read this value,
-  // not the text controller from before.
-  String selectedGenre = Constants.movieGenres[0];
-
-  // This is as close as we get to bound UI controls - they had to be
-  // passed in, in this clumsy way
+  // When doing an insertion to Realm, read this value, not the text controller from before.
+  // NOTE: This cannot be made private, as it's accessed from 'edit_movie_page'.
   //
-  TextEditingController _txtMovieTitle = TextEditingController();
-  TextEditingController _txtMovieScore = TextEditingController();
+  String strMovieGenreSelected = Constants.movieGenres[0];
 
-  // The TextEditingController for the genre has been replaced with
-  // a DropDownButton.
-
-  EditMovieViewModel(TextEditingController txtMovieTitle,
-      TextEditingController txtMovieScore) {
-    _txtMovieTitle = txtMovieTitle;
-    _txtMovieScore = txtMovieScore;
-  }
+  // The TextEditingController for the genre has been replaced with a DropDownButton.
+  //
+  // Nothing passed in for now; text controller values are read remotely as static objects.
+  //
+  EditMovieViewModel();
 
   int validateInputs(BuildContext context) {
     int result = 0;
@@ -37,18 +30,18 @@ class EditMovieViewModel extends ChangeNotifier {
     print(">>> validateInputs() fired");
 
     // Code 1: at least one missing input
-    if (_txtMovieTitle.text.trim().isEmpty) {
+    if (EditMovieWidgetState.txtMovieTitle.text.trim().isEmpty) {
       result = 1;
     }
     // Genre doesn't have to be validated because it's one choice
     // from a pre-set array. (How will combo boxes be done?)
-    if (_txtMovieScore.text.trim().isEmpty) {
+    if (EditMovieWidgetState.txtMovieScore.text.trim().isEmpty) {
       result = 1;
     }
 
     // Code 2: non-numeric input
     if (result == 0) {
-      int? score = int.tryParse(_txtMovieScore.text);
+      int? score = int.tryParse(EditMovieWidgetState.txtMovieScore.text);
       if (score == null) {
         result = 2;
       }
@@ -88,13 +81,15 @@ class EditMovieViewModel extends ChangeNotifier {
     print(">>> validationResultCode = $validationResultCode");
 
     if (validationResultCode == 0) {
-      int score = int.parse(_txtMovieScore.text);
+      int score = int.parse(EditMovieWidgetState.txtMovieScore.text);
 
       result = MovieRepository.createMovie(
-          _txtMovieTitle.text.trim(), score, selectedGenre);
-      //result = MovieRepository.createMovie(
-      //    _txtMovieTitle.text.trim(), score, _txtMovieGenre.text.trim());
+          EditMovieWidgetState.txtMovieTitle.text.trim(),
+          score,
+          strMovieGenreSelected);
+
       print(">>> result from MovieRepository.createNewMovie = $result");
+
       if (result != "OK") {
         validationResultCode = 99;
         successResult = false;
@@ -115,7 +110,10 @@ class EditMovieViewModel extends ChangeNotifier {
     int validationResultCode = validateInputs(context);
     if (validationResultCode == 0) {
       MovieRepository.updateMovie(
-          updateId, _txtMovieTitle.text, selectedGenre, _txtMovieScore.text);
+          updateId,
+          EditMovieWidgetState.txtMovieTitle.text,
+          strMovieGenreSelected,
+          EditMovieWidgetState.txtMovieScore.text);
 
       notifyListeners();
       //
@@ -130,9 +128,10 @@ class EditMovieViewModel extends ChangeNotifier {
 
   void deleteExistingMovie(int deleteId) {
     MovieRepository.deleteMovie(deleteId);
-
-    // no call to listeners needed; this is a database operation
+    //
+    // No call to listeners needed; this is a database operation:
     // list on home page will update on return
+    //
   }
 
   Future<void> showDeleteDialog(
@@ -141,7 +140,10 @@ class EditMovieViewModel extends ChangeNotifier {
       // <String> is the data type returned
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: Text(Constants.dialogAppTitle),
+        title: Text(
+          Constants.dialogAppTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: Text(msgText),
         actions: <Widget>[
           TextButton(
@@ -160,28 +162,27 @@ class EditMovieViewModel extends ChangeNotifier {
           ),
         ],
       ),
-      // don't really use the 'value' passed next to context at this point
     ).then((value) => {if (value == 'Y') Navigator.pop(context, 'Y')});
   }
 
   void fillInputFields(MovieModel movieModel) {
-    _txtMovieTitle.text = movieModel.movieTitle.toString();
-    selectedGenre =
+    EditMovieWidgetState.txtMovieTitle.text = movieModel.movieTitle.toString();
+    strMovieGenreSelected =
         movieModel.movieGenre.toString(); // for the drop-down button
-    _txtMovieScore.text = movieModel.movieScore.toString();
+    EditMovieWidgetState.txtMovieScore.text = movieModel.movieScore.toString();
     notifyListeners();
   }
 
   void clearInputFields() {
-    _txtMovieTitle.clear();
-    _txtMovieScore.clear();
-    // Genre is reset to index 0 each call to "new" item.
+    EditMovieWidgetState.txtMovieTitle.clear();
+    EditMovieWidgetState.txtMovieScore.clear();
+    // Genre is reset to index 0 each call to "new" item each time the page is opened.
     notifyListeners();
   }
 
   void updateGenreDropdown(String selectedValue) {
     print(">>> updateGenreDropdown, selectedValue = $selectedValue");
-    selectedGenre = selectedValue;
-    notifyListeners(); //        this may be unnecessary since setState() still records selections
+    strMovieGenreSelected = selectedValue;
+    notifyListeners(); //   this may be superfluous since setState() actually saves selected index
   }
 }
