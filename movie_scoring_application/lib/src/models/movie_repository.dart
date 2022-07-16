@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'movie_model.dart';
+import 'movie_json_model.dart'; //           for backup & restore only, not for display
 import '../util/constants.dart';
 
 // Realm support
@@ -23,6 +24,9 @@ class MovieRepository {
 
   // Entries DB
   static List<Map<String, dynamic>> movieEntries = [];
+
+  // Same entries but for JSON backup/restore (only filled when used)
+  static List<MovieModelJson> movieJsonEntries = [];
 
   MovieRepository() {
     print(">>> MovieRepository constructor() fired");
@@ -110,5 +114,18 @@ class MovieRepository {
     });
 
     print(">>> deleteAllMovies completed");
+  }
+
+  // Backup and restore processes
+
+  static void backupAllMovies() {
+    for (var m in realmMovies) {
+      movieJsonEntries.add(MovieModelJson(m.id!, m.entryTimestamp!,
+          m.entryDayOfWeek!, m.movieTitle!, m.movieGenre!, m.movieScore));
+    }
+  }
+
+  static void restoreAllMovies() {
+    //  TBD
   }
 }
