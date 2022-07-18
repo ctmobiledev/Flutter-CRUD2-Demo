@@ -30,6 +30,9 @@ class Constants {
   static TextStyle blackTextStyle =
       const TextStyle(color: Colors.black, fontSize: 16.0);
 
+  static TextStyle jsonBoxTextStyle =
+      const TextStyle(color: Colors.black, fontSize: 16.0);
+
   static var closeButtonStyle = ElevatedButton.styleFrom(
       textStyle: Constants.defaultTextStyle,
       primary: Colors.black,

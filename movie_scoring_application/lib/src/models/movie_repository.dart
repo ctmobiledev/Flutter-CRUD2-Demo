@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'movie_model.dart';
 import 'movie_json_model.dart'; //           for backup & restore only, not for display
@@ -27,6 +29,7 @@ class MovieRepository {
 
   // Same entries but for JSON backup/restore (only filled when used)
   static List<MovieModelJson> movieJsonEntries = [];
+  static StringBuffer sbJSON = StringBuffer("");
 
   MovieRepository() {
     print(">>> MovieRepository constructor() fired");
@@ -119,13 +122,18 @@ class MovieRepository {
   // Backup and restore processes
 
   static void backupAllMovies() {
+    print(">>> Repos: backupAllMovies");
+    sbJSON.clear();
     for (var m in realmMovies) {
       movieJsonEntries.add(MovieModelJson(m.id!, m.entryTimestamp!,
           m.entryDayOfWeek!, m.movieTitle!, m.movieGenre!, m.movieScore));
     }
+    sbJSON.write(jsonEncode(movieJsonEntries));
+    print(">>> sbJSON:");
+    print(sbJSON.toString());
   }
 
   static void restoreAllMovies() {
-    //  TBD
+    print(">>> Repos: restoreAllMovies");
   }
 }

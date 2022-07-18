@@ -81,42 +81,47 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
               //
               print(">>> Consumer builder: consumerVM = $consumerVM");
               return Container(
+                // this provides the outer constraint for the flex and the Expanded computation
+                // https://stackoverflow.com/questions/57803737/flutter-renderflex-children-have-non-zero-flex-but-incoming-height-constraints
+                height: MediaQuery.of(context).size.height,
                 margin: const EdgeInsets.only(
                     left: 30.0, right: 30.0, top: 20.0, bottom: 20.0),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            //Text(args.eventInx.toString()),
-                            Center(
-                                child: Column(
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 10.0),
-                                  child: Text(
-                                    'Data as JSON',
-                                    style: Constants.defaultTextStyle,
-                                  ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          //Text(args.eventInx.toString()),
+                          Center(
+                              child: Column(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 10.0),
+                                child: Text(
+                                  'Data as JSON',
+                                  style: Constants.defaultTextStyle,
                                 ),
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 20.0),
+                              ),
+                              Container(
+                                // Ideally want Expanded but it fails
+                                height: 400.0,
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 0.0),
                                   child: TextField(
+                                    maxLines: 40,
                                     textCapitalization:
                                         TextCapitalization.words,
                                     controller: txtDataJson,
                                     decoration: Constants.inputDecoration,
                                     cursorColor: Constants.inputCursorColor,
-                                    style: Constants.blackTextStyle,
+                                    style: Constants.jsonBoxTextStyle,
                                   ),
                                 ),
-                              ],
-                            ))
-                          ],
-                        ),
+                              ),
+                            ],
+                          ))
+                        ],
                       ),
                       Container(
                         margin: const EdgeInsets.only(top: 20.0),
@@ -128,7 +133,8 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                               ElevatedButton(
                                 style: Constants.greenButtonStyle,
                                 onPressed: () async {
-                                  // tbd
+                                  txtDataJson.clear();
+                                  BackupRestoreVM.backupAllData();
                                 },
                                 child: Text('Backup',
                                     style: Constants.buttonTextStyle),
@@ -136,7 +142,7 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                               ElevatedButton(
                                 style: Constants.redButtonStyle,
                                 onPressed: () {
-                                  // tbd
+                                  BackupRestoreVM.restoreAllData();
                                 },
                                 child: Text('Restore',
                                     style: Constants.buttonTextStyle),

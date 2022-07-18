@@ -44,6 +44,19 @@ class BackupRestoreViewModel extends ChangeNotifier {
     }
   }
 
+  void backupAllData() {
+    print(">>> backupAllData() fired");
+    MovieRepository.backupAllMovies();
+    if (MovieRepository.sbJSON.length > 0) {
+      BackupRestoreWidgetState.txtDataJson.text =
+          MovieRepository.sbJSON.toString();
+    }
+  }
+
+  void restoreAllData() {
+    print(">>> restoreAllData() fired");
+  }
+
   void fillInputFields(MovieModel movieModel) {
     BackupRestoreWidgetState.txtDataJson.text =
         backupRestoreModel.dataAsJson.toString();
