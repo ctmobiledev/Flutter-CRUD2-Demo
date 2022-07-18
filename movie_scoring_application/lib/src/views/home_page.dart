@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/views/backup_restore_page.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 
@@ -92,6 +93,10 @@ class _HomePageState extends State<HomePage> {
                 value: 3,
                 child: Text("About This App"),
               ),
+              PopupMenuItem<int>(
+                value: 4,
+                child: Text("Backup/Restore"),
+              ),
             ];
           }, onSelected: (value) {
             if (value == 0) {
@@ -117,6 +122,13 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AboutAppWidget()),
+              );
+            } else if (value == 4) {
+              print(">>> Backup/Restore");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const BackupRestoreWidget()),
               );
             }
           }),
