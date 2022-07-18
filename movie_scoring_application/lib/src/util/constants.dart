@@ -18,8 +18,8 @@ class Constants {
   ];
 
   // Styles
-  static TextStyle defaultTextStyle =
-      const TextStyle(color: Colors.white, fontSize: 16.0);
+  static TextStyle defaultTextStyle = const TextStyle(
+      color: Colors.white, fontSize: 16.0, fontFamily: 'OpenSans');
 
   static TextStyle buttonTextStyle = const TextStyle(
       color: Colors.white,
@@ -27,11 +27,11 @@ class Constants {
       fontWeight: FontWeight.bold,
       fontFamily: 'OpenSans');
 
-  static TextStyle blackTextStyle =
-      const TextStyle(color: Colors.black, fontSize: 16.0);
+  static TextStyle blackTextStyle = const TextStyle(
+      color: Colors.black, fontSize: 16.0, fontFamily: 'OpenSans');
 
-  static TextStyle jsonBoxTextStyle =
-      const TextStyle(color: Colors.black, fontSize: 16.0);
+  static TextStyle jsonBoxTextStyle = const TextStyle(
+      color: Colors.black, fontSize: 16.0, fontFamily: 'OpenSans');
 
   static var closeButtonStyle = ElevatedButton.styleFrom(
       textStyle: Constants.defaultTextStyle,

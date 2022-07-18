@@ -55,7 +55,7 @@ class _MainPageState extends State<MainPage> {
 
     // Comment out these lines to start with a clean database.
     //MovieRepository.deleteAllMovies();
-    //generateTestData();
+    //mainVM.generateTestData();
 
     mainVM.refreshMovies(context);
   }

@@ -23,16 +23,19 @@ class HomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   //
-  final mainVM = MainViewModel(); // set further down by ChangeNotifyProvider<T>
+  static final mainVM =
+      MainViewModel(); // set further down by ChangeNotifyProvider<T>
   //
   LocalConfiguration? config;
 
-  Object triggerRedraw = Object();
+  static Object triggerRedraw = Object();
+
+  static late BuildContext mainContext;
 
   @override
   void initState() {
@@ -68,6 +71,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     print(">>> HomePage/StatefulWidget - build() fired");
+    mainContext = context;
+    print(">>> mainContext saved");
     return Scaffold(
       appBar: AppBar(
         title: Text(

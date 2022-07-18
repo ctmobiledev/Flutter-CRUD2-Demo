@@ -105,7 +105,7 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                               ),
                               Container(
                                 // Ideally want Expanded but it fails
-                                height: 400.0,
+                                height: 300.0,
                                 child: Container(
                                   margin: const EdgeInsets.only(bottom: 0.0),
                                   child: TextField(
@@ -142,7 +142,10 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                               ElevatedButton(
                                 style: Constants.redButtonStyle,
                                 onPressed: () {
-                                  BackupRestoreVM.restoreAllData();
+                                  BackupRestoreVM.showConfirmRestoreDialog(
+                                      "This will overlay ALL the current database contents. "
+                                      "This operation CANNOT be reversed or undone. Are you sure?",
+                                      context);
                                 },
                                 child: Text('Restore',
                                     style: Constants.buttonTextStyle),
