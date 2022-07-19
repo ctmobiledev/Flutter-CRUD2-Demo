@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/models/all_data_json_model.dart';
 import 'package:movie_scoring_application/src/views/home_page.dart';
 import 'package:movie_scoring_application/src/views/main_page.dart';
 import '../util/dialog_helpers.dart';
@@ -32,7 +33,11 @@ class MovieRepository {
   static List<Map<String, dynamic>> movieEntries = [];
 
   // Same entries but for JSON backup/restore (only filled when used)
+  // Be sure to define all lists before invoking them in AllDataModelJson
   static List<MovieModelJson> movieJsonEntries = [];
+  static AllDataModelJson allDataModelJson = AllDataModelJson(movieJsonEntries);
+
+  // Output string for JSON
   static StringBuffer sbJSON = StringBuffer("");
 
   MovieRepository() {
@@ -124,15 +129,23 @@ class MovieRepository {
   }
 
   // Backup and restore processes
+  // For each table/entity, I decided to take a slightly simpler approach:
+  // rather than creating the object via the normal way, I'm just wrapping
+  // each table - a list - within its own object
 
   static void backupAllMovies() {
     print(">>> Repos: backupAllMovies");
     sbJSON.clear();
+
+    movieJsonEntries.clear();
     for (var m in realmMovies) {
       movieJsonEntries.add(MovieModelJson(m.id!, m.entryTimestamp!,
           m.entryDayOfWeek!, m.movieTitle!, m.movieGenre!, m.movieScore));
     }
-    sbJSON.write(jsonEncode(movieJsonEntries));
+    //sbJSON.write(jsonEncode(movieJsonEntries));
+    sbJSON.write(
+        jsonEncode(allDataModelJson)); // works in conjunction with .toJson()
+
     print(">>> sbJSON:");
     print(sbJSON.toString());
   }

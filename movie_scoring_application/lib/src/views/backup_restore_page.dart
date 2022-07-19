@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../viewmodels/backup_restore_viewmodel.dart';
 import '../util/constants.dart';
-import '../models/movie_repository.dart';
 
 class BackupRestoreWidget extends StatefulWidget {
   const BackupRestoreWidget({super.key});
@@ -99,7 +98,7 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                               Container(
                                 margin: const EdgeInsets.only(bottom: 10.0),
                                 child: Text(
-                                  'Data as JSON',
+                                  'Data (JSON)',
                                   style: Constants.defaultTextStyle,
                                 ),
                               ),
@@ -137,6 +136,14 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                                   BackupRestoreVM.backupAllData();
                                 },
                                 child: Text('Backup',
+                                    style: Constants.buttonTextStyle),
+                              ),
+                              ElevatedButton(
+                                style: Constants.closeButtonStyle,
+                                onPressed: () async {
+                                  txtDataJson.clear();
+                                },
+                                child: Text('Clear',
                                     style: Constants.buttonTextStyle),
                               ),
                               ElevatedButton(
