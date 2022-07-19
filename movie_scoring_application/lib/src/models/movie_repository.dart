@@ -156,7 +156,8 @@ class MovieRepository {
     MovieRepository.sbJSON.write(inputJSON);
     print(">>> inputJSON: $inputJSON");
     //MovieRepository.sbJSON.write(txtJSON.text);
-    MovieRepository.convertJsonToEntriesList();
+    //MovieRepository.convertJsonToEntriesList(); // **** SEE RIGHT BELOW ***
+    MovieRepository.convertJsonToDataLists();
     //showAlertDialog("JSON converted to list data.", context);
   }
 
@@ -208,6 +209,77 @@ class MovieRepository {
       //
       DialogHelpers.showAlertDialog(
           "Restore successful. Entries restored: ${tagObjs.length}.", context);
+      //
+    } on FormatException {
+      DialogHelpers.showAlertDialog(
+          "Restore failed due to ill-formed JSON string. This usually happens when a JSON string has been changed, "
+          "but something has caused imbalanced delimiters such as braces, brackets or quotation marks. "
+          "Please re-run the backup operation.",
+          context);
+    } catch (exc, stk) {
+      // signal error to user
+      DialogHelpers.showAlertDialog(
+          "Restore failed: $exc"
+          "Stack: $stk",
+          context);
+    }
+  }
+
+  static void convertJsonToDataLists() {
+    print(">>> convertJsonToDataLists() fired");
+
+    String allJsonText = sbJSON.toString();
+    //String arrayObjsText = sbJSON.toString();
+    //
+    // There is no outer tag, so we just assume list is [   ].
+    //
+    // Wrapped this in a try/catch in case the JSON is not well-formed.
+    // If the JSON is indeed ill-formed, the jsonDecode operation
+    // will throw an exception, preventing the deletion of all
+    // existing database entries.
+    //
+    try {
+      print(">>> allJsonText = $allJsonText");
+
+      // Anything that's not a List/array of objects is 'dynamic'
+      var tagAllDataJson = jsonDecode(allJsonText) as dynamic;
+
+      // Refer to each table/entity within an object by using the map's JSON tag in ['these']
+      var tagMoviesJson = tagAllDataJson['movies'] as List;
+      List<MovieModelJson> listMovies = tagMoviesJson
+          .map((tagJson) => MovieModelJson.fromJson(tagJson))
+          .toList();
+
+      print(">>> ======= movie models in JSON =======");
+      for (var m in listMovies) {
+        print(">>> ${m.id}: ${m.movieTitle}");
+      }
+      print(">>> ======= end =======");
+
+      // move entries back into the "real" Realm object list;
+      // if JSON is not well-formed, processing won't reach the point of deleting
+      // all existing data
+
+      MovieRepository.deleteAllMovies();
+      for (var t in listMovies) {
+        var newMovie = MovieModel(
+            id: t.id,
+            movieTitle: t.movieTitle,
+            entryTimestamp: t.entryTimestamp,
+            entryDayOfWeek: t.entryDayOfWeek,
+            movieScore: t.movieScore,
+            movieGenre: t.movieGenre);
+
+        realm.write(() {
+          realm.add(newMovie);
+        });
+
+        print(">>> restore completed for ${t.movieTitle}, id value = ${t.id}");
+      }
+      //
+      DialogHelpers.showAlertDialog(
+          "Restore successful. Entries restored: ${listMovies.length}.",
+          context);
       //
     } on FormatException {
       DialogHelpers.showAlertDialog(
