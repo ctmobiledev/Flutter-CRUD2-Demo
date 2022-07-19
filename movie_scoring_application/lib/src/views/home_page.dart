@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/views/backup_restore_page.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 
@@ -22,16 +23,19 @@ class HomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   //
-  final mainVM = MainViewModel(); // set further down by ChangeNotifyProvider<T>
+  static final mainVM =
+      MainViewModel(); // set further down by ChangeNotifyProvider<T>
   //
   LocalConfiguration? config;
 
-  Object triggerRedraw = Object();
+  static Object triggerRedraw = Object();
+
+  static late BuildContext mainContext;
 
   @override
   void initState() {
@@ -67,6 +71,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     print(">>> HomePage/StatefulWidget - build() fired");
+    mainContext = context;
+    print(">>> mainContext saved");
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -91,6 +97,10 @@ class _HomePageState extends State<HomePage> {
               PopupMenuItem<int>(
                 value: 3,
                 child: Text("About This App"),
+              ),
+              PopupMenuItem<int>(
+                value: 4,
+                child: Text("Backup/Restore"),
               ),
             ];
           }, onSelected: (value) {
@@ -117,6 +127,13 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AboutAppWidget()),
+              );
+            } else if (value == 4) {
+              print(">>> Backup/Restore");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const BackupRestoreWidget()),
               );
             }
           }),

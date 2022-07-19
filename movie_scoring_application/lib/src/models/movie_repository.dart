@@ -1,6 +1,12 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/views/home_page.dart';
+import 'package:movie_scoring_application/src/views/main_page.dart';
+import '../util/dialog_helpers.dart';
+import '../viewmodels/main_viewmodel.dart';
 import 'movie_model.dart';
 import 'movie_json_model.dart'; //           for backup & restore only, not for display
 import '../util/constants.dart';
@@ -27,6 +33,7 @@ class MovieRepository {
 
   // Same entries but for JSON backup/restore (only filled when used)
   static List<MovieModelJson> movieJsonEntries = [];
+  static StringBuffer sbJSON = StringBuffer("");
 
   MovieRepository() {
     print(">>> MovieRepository constructor() fired");
@@ -119,13 +126,88 @@ class MovieRepository {
   // Backup and restore processes
 
   static void backupAllMovies() {
+    print(">>> Repos: backupAllMovies");
+    sbJSON.clear();
     for (var m in realmMovies) {
       movieJsonEntries.add(MovieModelJson(m.id!, m.entryTimestamp!,
           m.entryDayOfWeek!, m.movieTitle!, m.movieGenre!, m.movieScore));
     }
+    sbJSON.write(jsonEncode(movieJsonEntries));
+    print(">>> sbJSON:");
+    print(sbJSON.toString());
   }
 
-  static void restoreAllMovies() {
-    //  TBD
+  static void restoreAllMovies(String inputJSON) {
+    print(">>> Repos: restoreAllMovies");
+    MovieRepository.sbJSON.clear();
+    MovieRepository.sbJSON.write(inputJSON);
+    print(">>> inputJSON: $inputJSON");
+    //MovieRepository.sbJSON.write(txtJSON.text);
+    MovieRepository.convertJsonToEntriesList();
+    //showAlertDialog("JSON converted to list data.", context);
+  }
+
+  static void convertJsonToEntriesList() {
+    print(">>> convertJsonToEntriesList() fired");
+
+    String arrayObjsText = sbJSON.toString();
+    //String arrayObjsText = sbJSON.toString();
+    //
+    // There is no outer tag, so we just assume list is [   ].
+    //
+    // Wrapped this in a try/catch in case the JSON is not well-formed.
+    // If the JSON is indeed ill-formed, the jsonDecode operation
+    // will throw an exception, preventing the deletion of all
+    // existing database entries.
+    //
+    try {
+      var tagObjsJson = jsonDecode(arrayObjsText) as List;
+      List<MovieModelJson> tagObjs = tagObjsJson
+          .map((tagJson) => MovieModelJson.fromJson(tagJson))
+          .toList();
+
+      print(">>> ======= movie models in JSON =======");
+      for (var m in tagObjs) {
+        print(">>> ${m.id}: ${m.movieTitle}");
+      }
+      print(">>> ======= end =======");
+
+      // move entries back into the "real" Realm object list;
+      // if JSON is not well-formed, processing won't reach the point of deleting
+      // all existing data
+
+      MovieRepository.deleteAllMovies();
+      for (var t in tagObjs) {
+        var newMovie = MovieModel(
+            id: t.id,
+            movieTitle: t.movieTitle,
+            entryTimestamp: t.entryTimestamp,
+            entryDayOfWeek: t.entryDayOfWeek,
+            movieScore: t.movieScore,
+            movieGenre: t.movieGenre);
+
+        realm.write(() {
+          realm.add(newMovie);
+        });
+
+        print(">>> restore completed for ${t.movieTitle}, id value = ${t.id}");
+      }
+      //
+      DialogHelpers.showAlertDialog(
+          "Restore successful. Entries restored: ${tagObjs.length}.", context);
+      //
+    } on FormatException {
+      DialogHelpers.showAlertDialog(
+          "Restore failed due to ill-formed JSON string. This usually happens when a JSON string has been changed, "
+          "but something has caused imbalanced delimiters such as braces, brackets or quotation marks. "
+          "Please re-run the backup operation.",
+          context);
+    } catch (exc, stk) {
+      // signal error to user
+      DialogHelpers.showAlertDialog(
+          "Restore failed: $exc"
+          "Stack: $stk",
+          context);
+    }
   }
 }
