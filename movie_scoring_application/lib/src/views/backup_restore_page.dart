@@ -80,109 +80,130 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
               // LET THE 'OUTER' WIDGET FROM THE LAYOUT IMMEDIATELY FOLLOW 'return'
               //
               print(">>> Consumer builder: consumerVM = $consumerVM");
-              return Container(
-                // this provides the outer constraint for the flex and the Expanded computation
-                // https://stackoverflow.com/questions/57803737/flutter-renderflex-children-have-non-zero-flex-but-incoming-height-constraints
-                height: MediaQuery.of(context).size.height,
-                margin: const EdgeInsets.only(
-                    left: 30.0, right: 30.0, top: 20.0, bottom: 20.0),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          //Text(args.eventInx.toString()),
-                          Center(
-                              child: Column(
+
+              // Right now this is the only way to ensure contents are top-aligned
+              // To see the affected area, add color: Colors.red to the first Container
+              // below.
+              var screenHeight = MediaQuery.of(context).size.height - 150.0;
+
+              return SingleChildScrollView(
+                child: Container(
+                  ////height: screenHeight,
+                  ////color: Colors.red,
+                  // this provides the outer constraint for the flex and the Expanded computation
+                  // https://stackoverflow.com/questions/57803737/flutter-renderflex-children-have-non-zero-flex-but-incoming-height-constraints
+                  margin: const EdgeInsets.only(
+                      left: 30.0, right: 30.0, top: 20.0, bottom: 20.0),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
+                              //Text(args.eventInx.toString()),
                               Container(
-                                margin: const EdgeInsets.only(bottom: 10.0),
-                                child: Text(
-                                  'Data (JSON)',
-                                  style: Constants.defaultTextStyle,
+                                child: Column(
+                                  children: [
+                                    // Expanded must go on EVERY child to work,
+                                    // and the flex property is similar to Android's
+                                    // layout_weight values (relative values determining)
+                                    // proportions.
+                                    Container(
+                                      height: 30.0,
+                                      margin:
+                                          const EdgeInsets.only(bottom: 10.0),
+                                      child: Text(
+                                        'Data (JSON)',
+                                        style: Constants.defaultTextStyle,
+                                      ),
+                                    ),
+                                    Container(
+                                      // Ideally want Expanded but it fails
+                                      // Still need to work on this
+                                      height: 340.0,
+                                      child: Container(
+                                        margin:
+                                            const EdgeInsets.only(bottom: 0.0),
+                                        child: TextField(
+                                          maxLines: 40,
+                                          textCapitalization:
+                                              TextCapitalization.words,
+                                          controller: txtDataJson,
+                                          decoration: Constants.inputDecoration,
+                                          cursorColor:
+                                              Constants.inputCursorColor,
+                                          style: Constants.jsonBoxTextStyle,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              Container(
-                                // Ideally want Expanded but it fails
-                                // Still need to work on this
-                                height: 240.0,
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 0.0),
-                                  child: TextField(
-                                    maxLines: 40,
-                                    textCapitalization:
-                                        TextCapitalization.words,
-                                    controller: txtDataJson,
-                                    decoration: Constants.inputDecoration,
-                                    cursorColor: Constants.inputCursorColor,
-                                    style: Constants.jsonBoxTextStyle,
-                                  ),
-                                ),
-                              ),
+                              )
                             ],
-                          ))
-                        ],
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 20.0),
-                        alignment: Alignment.bottomCenter,
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              ElevatedButton(
-                                style: Constants.greenButtonStyle,
-                                onPressed: () async {
-                                  txtDataJson.clear();
-                                  BackupRestoreVM.backupAllData(context);
-                                },
-                                child: Text('Backup',
-                                    style: Constants.buttonTextStyle),
-                              ),
-                              ElevatedButton(
-                                style: Constants.closeButtonStyle,
-                                onPressed: () async {
-                                  txtDataJson.clear();
-                                },
-                                child: Text('Clear',
-                                    style: Constants.buttonTextStyle),
-                              ),
-                            ]),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 20.0),
-                        alignment: Alignment.bottomCenter,
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              ElevatedButton(
-                                style: Constants.closeButtonStyle,
-                                onPressed: () async {
-                                  ClipboardData? clipData =
-                                      await Clipboard.getData(
-                                          Clipboard.kTextPlain);
-                                  String? clipText = clipData?.text;
-                                  txtDataJson.text = clipText as String;
-                                },
-                                child: Text('Paste',
-                                    style: Constants.buttonTextStyle),
-                              ),
-                              ElevatedButton(
-                                style: Constants.redButtonStyle,
-                                onPressed: () {
-                                  BackupRestoreVM.showConfirmRestoreDialog(
-                                      "This will overlay ALL the current database contents. "
-                                      "This operation CANNOT be reversed or undone. Are you sure?",
-                                      context);
-                                },
-                                child: Text('Restore',
-                                    style: Constants.buttonTextStyle),
-                              ),
-                            ]),
-                      ),
-                    ]),
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 20.0),
+                          alignment: Alignment.bottomCenter,
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ElevatedButton(
+                                  style: Constants.greenButtonStyle,
+                                  onPressed: () async {
+                                    txtDataJson.clear();
+                                    BackupRestoreVM.backupAllData(context);
+                                  },
+                                  child: Text('Backup',
+                                      style: Constants.buttonTextStyle),
+                                ),
+                                ElevatedButton(
+                                  style: Constants.closeButtonStyle,
+                                  onPressed: () async {
+                                    txtDataJson.clear();
+                                  },
+                                  child: Text('Clear',
+                                      style: Constants.buttonTextStyle),
+                                ),
+                              ]),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 20.0),
+                          alignment: Alignment.bottomCenter,
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ElevatedButton(
+                                  style: Constants.closeButtonStyle,
+                                  onPressed: () async {
+                                    ClipboardData? clipData =
+                                        await Clipboard.getData(
+                                            Clipboard.kTextPlain);
+                                    String? clipText = clipData?.text;
+                                    txtDataJson.text = clipText as String;
+                                  },
+                                  child: Text('Paste',
+                                      style: Constants.buttonTextStyle),
+                                ),
+                                ElevatedButton(
+                                  style: Constants.redButtonStyle,
+                                  onPressed: () {
+                                    BackupRestoreVM.showConfirmRestoreDialog(
+                                        "This will overlay ALL the current database contents. "
+                                        "This operation CANNOT be reversed or undone. Are you sure?",
+                                        context);
+                                  },
+                                  child: Text('Restore',
+                                      style: Constants.buttonTextStyle),
+                                ),
+                              ]),
+                        ),
+                      ]),
+                ),
               );
             }),
           ),
