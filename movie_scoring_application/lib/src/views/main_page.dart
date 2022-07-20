@@ -43,7 +43,7 @@ class _MainPageState extends State<MainPage> {
     // Init Realm here, as early as possible, should be the very first thing
     // NOTE: the local argument is a LIST of schema objects
     // No need to move to VM; this is a base-level thing, and the repository
-    // is already its own "thing"
+    // is already its own "thing".
     //
     print(">>> initState()");
     config = Configuration.local([MovieModel.schema, MovieGenreModel.schema],
