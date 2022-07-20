@@ -2,42 +2,43 @@
 
 import 'package:flutter/material.dart';
 import 'package:movie_scoring_application/src/models/movie_genre_model.dart';
-import 'package:movie_scoring_application/src/views/backup_restore_page.dart';
-import 'package:movie_scoring_application/src/views/list_movie_genre_page.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 
+import '../viewmodels/list_movie_genre_viewmodel.dart';
 import '../viewmodels/main_viewmodel.dart';
 
-import 'about_page.dart';
+import 'edit_movie_genre_page_args.dart';
 import 'edit_movie_page.dart';
 import 'edit_movie_page_args.dart';
-import 'settings_page.dart';
 
 import '../models/movie_model.dart';
 import '../models/movie_repository.dart';
 
 import '../util/constants.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required this.title}) : super(key: key);
+class MovieGenreListWidget extends StatefulWidget {
+  const MovieGenreListWidget({super.key});
 
-  final String title;
+  // Any 'final' variables must have values like 'title' which was removed
+  // from a replication of the home page.
 
   @override
-  State<HomePage> createState() => HomePageState();
+  State<MovieGenreListWidget> createState() => MovieGenreListWidgetState();
 }
 
-class HomePageState extends State<HomePage> {
+class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
   //
-  static final mainVM =
-      MainViewModel(); // set further down by ChangeNotifyProvider<T>
+  static final listMovieGenreVM =
+      MovieGenreListViewModel(); // set further down by ChangeNotifyProvider<T>
   //
   LocalConfiguration? config;
 
   static Object triggerRedraw = Object();
 
   static late BuildContext mainContext;
+
+  String pageTitle = "Movie Genres";
 
   @override
   void initState() {
@@ -69,7 +70,7 @@ class HomePageState extends State<HomePage> {
     //MovieRepository.deleteAllMovies();
     //generateTestData();
 
-    mainVM.refreshMovies(context);
+    listMovieGenreVM.refreshMovies(context);
   }
 
   void initDataCallback(Realm localRealm) {
@@ -84,7 +85,7 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.title,
+          pageTitle,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -92,76 +93,38 @@ class HomePageState extends State<HomePage> {
             return const [
               PopupMenuItem<int>(
                 value: 0,
-                child: Text("New Movie"),
-              ),
-              PopupMenuItem<int>(
-                value: 1,
-                child: Text("Settings"),
+                child: Text("New Movie Genre"),
               ),
               PopupMenuItem<int>(
                 value: 2,
-                child: Text("Clear All Movies"),
-              ),
-              PopupMenuItem<int>(
-                value: 3,
-                child: Text("About This App"),
-              ),
-              PopupMenuItem<int>(
-                value: 4,
-                child: Text("Backup/Restore"),
-              ),
-              PopupMenuItem<int>(
-                value: 5,
-                child: Text("Movie Genres"),
+                child: Text("Clear All Movie Genres"),
               ),
             ];
           }, onSelected: (value) {
             if (value == 0) {
-              print(">>> New Movie");
+              print(">>> New Movie Genre");
               // inx of -1 = New, inx > 0 = Edit
               Navigator.pushNamed(
                 context,
                 EditMovieWidget.routeName,
-                arguments: EditMovieArgs(-1),
-              ).whenComplete(() => mainVM.refreshMovies(context));
+                arguments: EditMovieGenreArgs(-1),
+              ).whenComplete(() => listMovieGenreVM.refreshMovies(context));
             } else if (value == 1) {
-              print(">>> Settings");
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsWidget()),
-              );
-            } else if (value == 2) {
-              print(">>> Clear All Movies");
-              mainVM.showConfirmDeleteDialog(
-                  "This will delete all movie entries. Are you sure?", context);
-            } else if (value == 3) {
-              print(">>> About");
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AboutAppWidget()),
-              );
-            } else if (value == 4) {
-              print(">>> Backup/Restore");
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const BackupRestoreWidget()),
-              );
-            } else if (value == 5) {
-              print(">>> Movie Genres");
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const MovieGenreListWidget()),
-              );
+              print(">>> Clear All Movie Genres");
+
+              // may need a special index to pass for the onPressed action to follow
+              listMovieGenreVM.showConfirmDeleteDialog(
+                  "This will delete all movie genre entries. Are you sure?",
+                  context);
             }
           }),
         ],
       ),
       // INSERT ChangeNotifierProvier<SomeViewModelName> HERE
-      body: ChangeNotifierProvider<MainViewModel>(
-          create: (context) => mainVM,
-          child: Consumer<MainViewModel>(builder: (context, mainVM, _) {
+      body: ChangeNotifierProvider<MovieGenreListViewModel>(
+          create: (context) => listMovieGenreVM,
+          child:
+              Consumer<MovieGenreListViewModel>(builder: (context, listVM, _) {
             //
             // IMPORTANT: MUST RETURN THE *WHOLE* LAYOUT HERE, AFTER 'return'
             // LET THE 'OUTER' WIDGET FROM THE LAYOUT IMMEDIATELY FOLLOW 'return'
@@ -185,7 +148,7 @@ class HomePageState extends State<HomePage> {
                                 EditMovieWidget.routeName,
                                 arguments: EditMovieArgs(inx!),
                               ).whenComplete(
-                                  () => mainVM.refreshMovies(context));
+                                  () => listVM.refreshMovies(context));
                             },
                             child: Card(
                                 color: Colors.transparent,
@@ -205,9 +168,9 @@ class HomePageState extends State<HomePage> {
           Navigator.pushNamed(
             context,
             EditMovieWidget.routeName,
-            arguments: EditMovieArgs(-1),
-          ).whenComplete(() => mainVM.refreshMovies(context));
-          print(">>> New Movie - FAB");
+            arguments: EditMovieGenreArgs(-1),
+          ).whenComplete(() => listMovieGenreVM.refreshMovies(context));
+          print(">>> New Movie Genre - FAB");
         },
         backgroundColor: Colors.deepPurple,
         child: const Icon(Icons.create),
