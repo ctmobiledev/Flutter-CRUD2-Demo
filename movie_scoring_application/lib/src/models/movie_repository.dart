@@ -3,13 +3,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:movie_scoring_application/src/models/all_data_json_model.dart';
-import 'package:movie_scoring_application/src/views/home_page.dart';
-import 'package:movie_scoring_application/src/views/main_page.dart';
-import '../util/dialog_helpers.dart';
-import '../viewmodels/main_viewmodel.dart';
+import 'package:movie_scoring_application/src/models/movie_genre_json_model.dart';
+import 'package:movie_scoring_application/src/models/movie_genre_model.dart';
 import 'movie_model.dart';
 import 'movie_json_model.dart'; //           for backup & restore only, not for display
+import '../util/dialog_helpers.dart';
 import '../util/constants.dart';
 
 // Realm support
@@ -28,6 +28,7 @@ class MovieRepository {
   // All the RealmResults instances should be set IMMEDIATELY after.
   static late Realm realm;
   static late RealmResults<MovieModel> realmMovies;
+  static late RealmResults<MovieGenreModel> realmMovieGenres;
 
   // Entries DB
   static List<Map<String, dynamic>> movieEntries = [];
@@ -35,7 +36,9 @@ class MovieRepository {
   // Same entries but for JSON backup/restore (only filled when used)
   // Be sure to define all lists before invoking them in AllDataModelJson
   static List<MovieModelJson> movieJsonEntries = [];
-  static AllDataModelJson allDataModelJson = AllDataModelJson(movieJsonEntries);
+  static List<MovieGenreModelJson> movieGenreJsonEntries = [];
+  static AllDataModelJson allDataModelJson =
+      AllDataModelJson(movieJsonEntries, movieGenreJsonEntries);
 
   // Output string for JSON
   static StringBuffer sbJSON = StringBuffer("");
@@ -44,6 +47,8 @@ class MovieRepository {
     print(">>> MovieRepository constructor() fired");
     // may not need these
     realmMovies = realm.all<MovieModel>();
+    realmMovieGenres = realm.all<MovieGenreModel>();
+    print(">>> realmMovieGenres count: ${realmMovieGenres.length}");
   }
 
   static RealmResults<MovieModel> getMovies() {
@@ -142,9 +147,21 @@ class MovieRepository {
       movieJsonEntries.add(MovieModelJson(m.id!, m.entryTimestamp!,
           m.entryDayOfWeek!, m.movieTitle!, m.movieGenre!, m.movieScore));
     }
-    //sbJSON.write(jsonEncode(movieJsonEntries));
+
+    movieGenreJsonEntries.clear();
+    for (var m in realmMovieGenres) {
+      movieGenreJsonEntries.add(MovieGenreModelJson(m.id!, m.movieGenreName!));
+    }
+
+    // redefine this for the whole outer object
+    allDataModelJson.movies = movieJsonEntries;
+    allDataModelJson.movieGenres = movieGenreJsonEntries;
+
     sbJSON.write(
         jsonEncode(allDataModelJson)); // works in conjunction with .toJson()
+
+    // also write the entry to the clipboard automatically
+    Clipboard.setData(ClipboardData(text: sbJSON.toString()));
 
     print(">>> sbJSON:");
     print(sbJSON.toString());
@@ -159,70 +176,6 @@ class MovieRepository {
     //MovieRepository.convertJsonToEntriesList(); // **** SEE RIGHT BELOW ***
     MovieRepository.convertJsonToDataLists();
     //showAlertDialog("JSON converted to list data.", context);
-  }
-
-  static void convertJsonToEntriesList() {
-    print(">>> convertJsonToEntriesList() fired");
-
-    String arrayObjsText = sbJSON.toString();
-    //String arrayObjsText = sbJSON.toString();
-    //
-    // There is no outer tag, so we just assume list is [   ].
-    //
-    // Wrapped this in a try/catch in case the JSON is not well-formed.
-    // If the JSON is indeed ill-formed, the jsonDecode operation
-    // will throw an exception, preventing the deletion of all
-    // existing database entries.
-    //
-    try {
-      var tagObjsJson = jsonDecode(arrayObjsText) as List;
-      List<MovieModelJson> tagObjs = tagObjsJson
-          .map((tagJson) => MovieModelJson.fromJson(tagJson))
-          .toList();
-
-      print(">>> ======= movie models in JSON =======");
-      for (var m in tagObjs) {
-        print(">>> ${m.id}: ${m.movieTitle}");
-      }
-      print(">>> ======= end =======");
-
-      // move entries back into the "real" Realm object list;
-      // if JSON is not well-formed, processing won't reach the point of deleting
-      // all existing data
-
-      MovieRepository.deleteAllMovies();
-      for (var t in tagObjs) {
-        var newMovie = MovieModel(
-            id: t.id,
-            movieTitle: t.movieTitle,
-            entryTimestamp: t.entryTimestamp,
-            entryDayOfWeek: t.entryDayOfWeek,
-            movieScore: t.movieScore,
-            movieGenre: t.movieGenre);
-
-        realm.write(() {
-          realm.add(newMovie);
-        });
-
-        print(">>> restore completed for ${t.movieTitle}, id value = ${t.id}");
-      }
-      //
-      DialogHelpers.showAlertDialog(
-          "Restore successful. Entries restored: ${tagObjs.length}.", context);
-      //
-    } on FormatException {
-      DialogHelpers.showAlertDialog(
-          "Restore failed due to ill-formed JSON string. This usually happens when a JSON string has been changed, "
-          "but something has caused imbalanced delimiters such as braces, brackets or quotation marks. "
-          "Please re-run the backup operation.",
-          context);
-    } catch (exc, stk) {
-      // signal error to user
-      DialogHelpers.showAlertDialog(
-          "Restore failed: $exc"
-          "Stack: $stk",
-          context);
-    }
   }
 
   static void convertJsonToDataLists() {
@@ -250,9 +203,18 @@ class MovieRepository {
           .map((tagJson) => MovieModelJson.fromJson(tagJson))
           .toList();
 
+      var tagMovieGenresJson = tagAllDataJson['movieGenres'] as List;
+      List<MovieGenreModelJson> listMovieGenres = tagMovieGenresJson
+          .map((tagJson) => MovieGenreModelJson.fromJson(tagJson))
+          .toList();
+
       print(">>> ======= movie models in JSON =======");
       for (var m in listMovies) {
         print(">>> ${m.id}: ${m.movieTitle}");
+      }
+      print(">>> ======= movie genre models in JSON =======");
+      for (var m in listMovieGenres) {
+        print(">>> ${m.id}: ${m.movieGenreName}");
       }
       print(">>> ======= end =======");
 
@@ -260,6 +222,10 @@ class MovieRepository {
       // if JSON is not well-formed, processing won't reach the point of deleting
       // all existing data
 
+      //******************************************************************
+      // Table 1: Movies
+      //******************************************************************
+      print(">>> RESTORING: Movies");
       MovieRepository.deleteAllMovies();
       for (var t in listMovies) {
         var newMovie = MovieModel(
@@ -276,9 +242,29 @@ class MovieRepository {
 
         print(">>> restore completed for ${t.movieTitle}, id value = ${t.id}");
       }
+
+      //******************************************************************
+      // Table 2: Movie Genres (quick and dirty)
+      //******************************************************************
+      print(">>> RESTORING: Movie Genres");
+      MovieRepository.realm.write(() {
+        MovieRepository.realm.deleteAll<MovieGenreModel>();
+
+        for (var t in listMovieGenres) {
+          var newMovieGenre =
+              MovieGenreModel(id: t.id, movieGenreName: t.movieGenreName);
+
+          realm.add(newMovieGenre);
+          print(
+              ">>> restore completed for ${t.movieGenreName}, id value = ${t.id}");
+        }
+      });
+
       //
       DialogHelpers.showAlertDialog(
-          "Restore successful. Entries restored: ${listMovies.length}.",
+          "Restore successful.\n\n"
+          "Movie entries restored: ${listMovies.length}.\n"
+          "Movie Genre entries restored: ${listMovieGenres.length}.",
           context);
       //
     } on FormatException {
@@ -294,5 +280,28 @@ class MovieRepository {
           "Stack: $stk",
           context);
     }
+  }
+
+  static Future<void> generateMovieGenres() async {
+    print(">>> generateMovieGenres() fired");
+    MovieRepository.realm.write(() {
+      MovieRepository.realm.deleteAll<MovieGenreModel>();
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 1, movieGenreName: 'Comedy'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 2, movieGenreName: 'Drama'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 3, movieGenreName: 'Documentary'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 4, movieGenreName: 'Action'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 5, movieGenreName: 'Rom-Com'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 6, movieGenreName: 'Horror'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 7, movieGenreName: 'Sci-Fi'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 8, movieGenreName: 'Other'));
+    });
   }
 }

@@ -6,6 +6,7 @@ class Constants {
   // Strings
   static String dialogAppTitle = "Movie Score App (CRUD Demo)";
   static var weekdayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  /*
   static var movieGenres = [
     'Comedy',
     'Drama',
@@ -16,6 +17,7 @@ class Constants {
     'Sci-Fi',
     'Other'
   ];
+ */
 
   // Styles
   static TextStyle defaultTextStyle = const TextStyle(

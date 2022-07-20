@@ -47,12 +47,16 @@ class BackupRestoreViewModel extends ChangeNotifier {
     }
   }
 
-  void backupAllData() {
+  void backupAllData(BuildContext buildContext) {
     print(">>> backupAllData() fired");
     MovieRepository.backupAllMovies();
     if (MovieRepository.sbJSON.length > 0) {
       BackupRestoreWidgetState.txtDataJson.text =
           MovieRepository.sbJSON.toString();
+      DialogHelpers.showAlertDialog(
+          "Data copied to clipboard. Paste into any application to save the text, then later "
+          "paste back to the box in this window and tap Restore to restore all data.",
+          buildContext);
     }
   }
 

@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/backup_restore_viewmodel.dart';
@@ -104,7 +105,8 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                               ),
                               Container(
                                 // Ideally want Expanded but it fails
-                                height: 300.0,
+                                // Still need to work on this
+                                height: 240.0,
                                 child: Container(
                                   margin: const EdgeInsets.only(bottom: 0.0),
                                   child: TextField(
@@ -133,7 +135,7 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                                 style: Constants.greenButtonStyle,
                                 onPressed: () async {
                                   txtDataJson.clear();
-                                  BackupRestoreVM.backupAllData();
+                                  BackupRestoreVM.backupAllData(context);
                                 },
                                 child: Text('Backup',
                                     style: Constants.buttonTextStyle),
@@ -144,6 +146,27 @@ class BackupRestoreWidgetState extends State<BackupRestoreWidget> {
                                   txtDataJson.clear();
                                 },
                                 child: Text('Clear',
+                                    style: Constants.buttonTextStyle),
+                              ),
+                            ]),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 20.0),
+                        alignment: Alignment.bottomCenter,
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                style: Constants.closeButtonStyle,
+                                onPressed: () async {
+                                  ClipboardData? clipData =
+                                      await Clipboard.getData(
+                                          Clipboard.kTextPlain);
+                                  String? clipText = clipData?.text;
+                                  txtDataJson.text = clipText as String;
+                                },
+                                child: Text('Paste',
                                     style: Constants.buttonTextStyle),
                               ),
                               ElevatedButton(

@@ -12,6 +12,7 @@ import 'edit_movie_page_args.dart';
 import 'settings_page.dart';
 
 import '../models/movie_model.dart';
+import '../models/movie_genre_model.dart';
 import '../models/movie_repository.dart';
 
 import '../util/constants.dart';
@@ -45,7 +46,7 @@ class _MainPageState extends State<MainPage> {
     // is already its own "thing"
     //
     print(">>> initState()");
-    config = Configuration.local([MovieModel.schema],
+    config = Configuration.local([MovieModel.schema, MovieGenreModel.schema],
         initialDataCallback: initDataCallback);
     print(">>> config = $config");
     MovieRepository.realm = Realm(config!);

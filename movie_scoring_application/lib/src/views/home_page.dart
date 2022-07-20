@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/models/movie_genre_model.dart';
 import 'package:movie_scoring_application/src/views/backup_restore_page.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
@@ -44,18 +45,24 @@ class HomePageState extends State<HomePage> {
     print(">>> _HomePageState - initState() fired");
 
     // Init Realm here, as early as possible, should be the very first thing
+    //
     // NOTE: the local argument is a LIST of schema objects
+    // Add one [xxxx.schema] for each call to Configuration
     // No need to move to VM; this is a base-level thing, and the repository
     // is already its own "thing"
     //
     print(">>> initState()");
-    config = Configuration.local([MovieModel.schema],
+    config = Configuration.local([MovieModel.schema, MovieGenreModel.schema],
         initialDataCallback: initDataCallback);
     print(">>> config = $config");
     MovieRepository.realm = Realm(config!);
     print(">>> MovieRepository.realm = ${MovieRepository.realm.toString()}");
 
     MovieRepository.realmMovies = MovieRepository.realm.all<MovieModel>();
+
+    MovieRepository.generateMovieGenres();
+    MovieRepository.realmMovieGenres =
+        MovieRepository.realm.all<MovieGenreModel>();
 
     // Comment out these lines to start with a clean database.
     //MovieRepository.deleteAllMovies();

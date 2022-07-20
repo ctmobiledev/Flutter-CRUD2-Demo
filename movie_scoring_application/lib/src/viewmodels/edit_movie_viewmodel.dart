@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/models/movie_genre_model.dart';
 import 'package:movie_scoring_application/src/views/edit_movie_page.dart';
 
 import '../models/movie_model.dart';
@@ -15,13 +16,22 @@ class EditMovieViewModel extends ChangeNotifier {
   // When doing an insertion to Realm, read this value, not the text controller from before.
   // NOTE: This cannot be made private, as it's accessed from 'edit_movie_page'.
   //
-  String strMovieGenreSelected = Constants.movieGenres[0];
+  static List<String> movieGenres = [];
+  String strMovieGenreSelected = "";
 
   // The TextEditingController for the genre has been replaced with a DropDownButton.
   //
   // Nothing passed in for now; text controller values are read remotely as static objects.
   //
-  EditMovieViewModel();
+  EditMovieViewModel() {
+    print(">>> EditMovieViewModel() constructor fired");
+    var realmMovieGenres = MovieRepository.realm.all<MovieGenreModel>();
+    movieGenres.clear();
+    for (var g in realmMovieGenres) {
+      movieGenres.add(g.movieGenreName.toString());
+    }
+    strMovieGenreSelected = movieGenres[0];
+  }
 
   int validateInputs(BuildContext context) {
     int result = 0;

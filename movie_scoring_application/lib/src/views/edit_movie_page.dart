@@ -77,7 +77,6 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
       // And set the dropdown
       editMovieVM.strMovieGenreSelected =
           movieModelValues.movieGenre.toString();
-
     } else {
       // no index found (movieId == -1); start with blank fields
       editMovieVM.clearInputFields();
@@ -176,7 +175,7 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
                                           value:
                                               editMovieVM.strMovieGenreSelected,
                                           // 'value': what the dropdown control assigns selected value to
-                                          items: Constants.movieGenres
+                                          items: EditMovieViewModel.movieGenres
                                               .map<DropdownMenuItem<String>>(
                                                   (String value) {
                                             print(
