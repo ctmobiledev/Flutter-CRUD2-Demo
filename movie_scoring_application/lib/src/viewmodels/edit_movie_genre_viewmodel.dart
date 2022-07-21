@@ -39,6 +39,16 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     // Code 1: at least one missing input
     if (EditMovieGenreWidgetState.txtMovieGenre.text.trim().isEmpty) {
       result = 1;
+    } else {
+      // To prevent a genre value from hosing the sort order - "(No Selection)" should always be element 0 -
+      // a regular expression will ensure values can only have [A-Z][a-z][0-9] as the first character. It
+      // must start with a letter or a number.
+      final firstCharAlphaNumericTest = RegExp(r'^[a-zA-Z0-9]');
+      var firstCharIsAlphaNumeric = firstCharAlphaNumericTest
+          .hasMatch(EditMovieGenreWidgetState.txtMovieGenre.text.trim());
+      if (firstCharIsAlphaNumeric == false) {
+        result = 2;
+      }
     }
 
     return result;
@@ -50,6 +60,11 @@ class EditMovieGenreViewModel extends ChangeNotifier {
       case 1:
         DialogHelpers.showAlertDialog(
             "Please enter a movie genre before saving.", context);
+        break;
+      case 2:
+        DialogHelpers.showAlertDialog(
+            "The value must start with a letter (A to Z, a to z) or a number.",
+            context);
         break;
       case 99:
         DialogHelpers.showAlertDialog(

@@ -59,7 +59,9 @@ class MovieRepository {
 
   static RealmResults<MovieGenreModel> getMovieGenres() {
     // consider a try/on at some point
-    realmMovieGenres = realm.all<MovieGenreModel>();
+    // .all<MovieGenreModel>()
+    realmMovieGenres =
+        realm.query<MovieGenreModel>('TRUEPREDICATE SORT(movieGenreName ASC)');
     return realmMovieGenres;
   }
 

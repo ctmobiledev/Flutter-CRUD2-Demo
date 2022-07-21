@@ -25,7 +25,8 @@ class EditMovieViewModel extends ChangeNotifier {
   //
   EditMovieViewModel() {
     print(">>> EditMovieViewModel() constructor fired");
-    var realmMovieGenres = MovieRepository.realm.all<MovieGenreModel>();
+    var realmMovieGenres = MovieRepository.getMovieGenres();
+    //var realmMovieGenres = MovieRepository.realm.all<MovieGenreModel>();
     movieGenres.clear();
     for (var g in realmMovieGenres) {
       movieGenres.add(g.movieGenreName.toString());

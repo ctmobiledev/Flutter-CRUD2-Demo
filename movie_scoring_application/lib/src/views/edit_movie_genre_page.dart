@@ -73,7 +73,7 @@ class EditMovieGenreWidgetState extends State<EditMovieGenreWidget> {
       txtMovieGenre.text = movieModelGenreValues.movieGenreName.toString();
       //
     } else {
-      // no index found (movieId == -1); start with blank fields
+      // no index found (id == -1); start with blank fields
       editMovieGenreVM.clearInputFields();
     }
 

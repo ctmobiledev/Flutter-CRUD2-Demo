@@ -60,18 +60,18 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as EditMovieArgs;
 
-    gEventInx = args.movieId;
+    gEventInx = args.id;
 
     // args.eventInx = if negative, new (insert); if positive int, edit (update)
     // deletes: do after exited screen
-    String title = (args.movieId == -1) ? "New Movie" : "Edit Movie";
+    String title = (args.id == -1) ? "New Movie" : "Edit Movie";
 
     // get previously defined event
-    if (args.movieId > 0) {
+    if (args.id > 0) {
       var movieModelValues = MovieRepository.realmMovies
-          .firstWhere((element) => element.id == args.movieId);
+          .firstWhere((element) => element.id == args.id);
 
-      print(">>> entry found with id = ${args.movieId}");
+      print(">>> entry found with id = ${args.id}");
 
       // Fill the text controllers
       txtMovieTitle.text = movieModelValues.movieTitle.toString();
@@ -101,7 +101,7 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
 
       //
     } else {
-      // no index found (movieId == -1); start with blank fields
+      // no index found (id == -1); start with blank fields
       editMovieVM.clearInputFields();
     }
 
@@ -261,7 +261,7 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
                               ElevatedButton(
                                 style: Constants.greenButtonStyle,
                                 onPressed: () async {
-                                  if (args.movieId == -1) {
+                                  if (args.id == -1) {
                                     var success = await editMovieVM
                                         .createNewMovie(context);
                                     print(">>> Save/New - success = $success");
@@ -270,9 +270,8 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
                                     }
                                   } else {
                                     print(">>> running update and popping");
-                                    var success =
-                                        await editMovieVM.updateExistingMovie(
-                                            args.movieId, context);
+                                    var success = await editMovieVM
+                                        .updateExistingMovie(args.id, context);
                                     print(
                                         ">>> Save/Update - success = $success");
                                     if (success) {
@@ -292,15 +291,15 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
                                     style: Constants.buttonTextStyle),
                               ),
                               ElevatedButton(
-                                style: (args.movieId == -1)
+                                style: (args.id == -1)
                                     ? Constants.redButtonDisabledStyle
                                     : Constants.redButtonStyle,
                                 onPressed: () {
                                   print(">>> Delete button pressed");
-                                  if (args.movieId > -1) {
+                                  if (args.id > -1) {
                                     editMovieVM.showDeleteDialog(
                                         "Are you sure you mean to delete this entry?",
-                                        args.movieId,
+                                        args.id,
                                         context);
                                   }
                                 },

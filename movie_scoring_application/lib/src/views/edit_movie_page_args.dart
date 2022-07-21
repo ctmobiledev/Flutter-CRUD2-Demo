@@ -3,7 +3,7 @@
 //
 
 class EditMovieArgs {
-  final int movieId;
+  final int id;
 
-  EditMovieArgs(this.movieId);
+  EditMovieArgs(this.id);
 }
