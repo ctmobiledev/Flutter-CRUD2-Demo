@@ -137,6 +137,20 @@ class MovieRepository {
     });
   }
 
+  static void updateMoviesRenamedGenre(String oldName, String newName) {
+    var moviesToUpdate = MovieRepository.realmMovies
+        .where((element) => element.movieGenre == oldName);
+    print(">>> updateMoviesRenamedGenre - with genre = $oldName");
+    print(">>> count: ${moviesToUpdate.length}}");
+
+    MovieRepository.realm.write(() {
+      for (var m in moviesToUpdate) {
+        m.movieGenre = newName;
+        print(">>> ${m.movieTitle} now has genre of ${m.movieGenre}");
+      }
+    });
+  }
+
   static void deleteMovie(int deleteId) {
     var movieModelToDelete = MovieRepository.realmMovies
         .firstWhere((element) => element.id == deleteId);
@@ -187,11 +201,19 @@ class MovieRepository {
   static void updateMovieGenre(int updateId, String newGenre) {
     var movieModelGenreToUpdate = MovieRepository.realmMovieGenres
         .firstWhere((element) => element.id == updateId);
-    print(">>> updateMovieGenre - entry found with id = $updateId");
+
+    var oldGenre = movieModelGenreToUpdate.movieGenreName.toString();
+    print(
+        ">>> updateMovieGenre - entry found with id = $updateId, oldGenre = $oldGenre");
 
     MovieRepository.realm.write(() {
       movieModelGenreToUpdate.movieGenreName = newGenre.trim();
     });
+
+    // Then, reset all the movies' genres from the old value to the new value
+    print(
+        ">>> updateMovieGenre - calling updateMoviesRenamedGenre, oldGenre = $oldGenre, newGenre = $newGenre");
+    MovieRepository.updateMoviesRenamedGenre(oldGenre, newGenre);
   }
 
   static void deleteMovieGenre(int deleteId) {

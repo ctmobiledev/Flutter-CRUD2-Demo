@@ -97,7 +97,6 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     if (validationResultCode == 0) {
       MovieRepository.updateMovieGenre(
           updateId, EditMovieGenreWidgetState.txtMovieGenre.text);
-
       notifyListeners();
       //
     } else {
