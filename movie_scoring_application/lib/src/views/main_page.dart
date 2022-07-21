@@ -28,7 +28,14 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   //
-  final mainVM = MainViewModel(); // set further down by ChangeNotifyProvider<T>
+  // This can be 'final' because it's the 'base' screen used by the app. But in other similar pages,
+  // it should not be 'final' or 'static', because that causes ChangeNotifier to complain if a page
+  // is called a second, third, etc. time. Nothing happens the first time, and it's properly disposed
+  // of.
+  //
+  // This is set further down by ChangeNotifyProvider<T>
+  //
+  MainViewModel mainVM = MainViewModel();
   //
   LocalConfiguration? config;
 

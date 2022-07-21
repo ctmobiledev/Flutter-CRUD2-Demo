@@ -2,9 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:movie_scoring_application/src/models/backup_restore_model.dart';
-import 'package:movie_scoring_application/src/viewmodels/main_viewmodel.dart';
 import 'package:movie_scoring_application/src/views/backup_restore_page.dart';
-import 'package:movie_scoring_application/src/views/main_page.dart';
 
 import '../models/movie_model.dart';
 import '../models/movie_repository.dart';

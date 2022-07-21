@@ -177,9 +177,28 @@ class EditMovieViewModel extends ChangeNotifier {
 
   void fillInputFields(MovieModel movieModel) {
     EditMovieWidgetState.txtMovieTitle.text = movieModel.movieTitle.toString();
+
+    //
+    // If the previously selected movie genre has disappeared or been previously deleted,
+    // this resets the dropdown value for this column to the default.
+    //
+    /*
+    if (EditMovieViewModel.movieGenres.contains(movieModel.movieGenre) ==
+        false) {
+      print(
+          ">>> Genre ${movieModel.movieGenre} was deleted, replacing with default");
+      strMovieGenreSelected = Constants.noDropdownValueSelected;
+    } else {
+      strMovieGenreSelected =
+          movieModel.movieGenre.toString(); // for the drop-down button
+    }
+    */
+
     strMovieGenreSelected =
         movieModel.movieGenre.toString(); // for the drop-down button
+
     EditMovieWidgetState.txtMovieScore.text = movieModel.movieScore.toString();
+
     notifyListeners();
   }
 

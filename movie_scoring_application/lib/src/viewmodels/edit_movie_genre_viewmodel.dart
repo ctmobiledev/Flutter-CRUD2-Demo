@@ -2,22 +2,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:movie_scoring_application/src/models/movie_genre_model.dart';
-import 'package:movie_scoring_application/src/views/edit_movie_page.dart';
+import 'package:movie_scoring_application/src/views/edit_movie_genre_page.dart';
 
-import '../models/movie_model.dart';
 import '../models/movie_repository.dart';
 import '../util/constants.dart';
 import '../util/dialog_helpers.dart';
 
 class EditMovieGenreViewModel extends ChangeNotifier {
-  MovieModel movieModel = MovieModel();
+  MovieGenreModel movieGenreModel = MovieGenreModel();
 
   // This cannot be null or blank, or compiler says, "Hey! I don't see that value in the list!"
   // When doing an insertion to Realm, read this value, not the text controller from before.
   // NOTE: This cannot be made private, as it's accessed from 'edit_movie_page'.
   //
   static List<String> movieGenres = [];
-  String strMovieGenreSelected = "";
 
   // The TextEditingController for the genre has been replaced with a DropDownButton.
   //
@@ -30,7 +28,6 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     for (var g in realmMovieGenres) {
       movieGenres.add(g.movieGenreName.toString());
     }
-    strMovieGenreSelected = movieGenres[0];
   }
 
   int validateInputs(BuildContext context) {
@@ -40,21 +37,8 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     print(">>> validateInputs() fired");
 
     // Code 1: at least one missing input
-    if (EditMovieWidgetState.txtMovieTitle.text.trim().isEmpty) {
+    if (EditMovieGenreWidgetState.txtMovieGenre.text.trim().isEmpty) {
       result = 1;
-    }
-    // Genre doesn't have to be validated because it's one choice
-    // from a pre-set array. (How will combo boxes be done?)
-    if (EditMovieWidgetState.txtMovieScore.text.trim().isEmpty) {
-      result = 1;
-    }
-
-    // Code 2: non-numeric input
-    if (result == 0) {
-      int? score = int.tryParse(EditMovieWidgetState.txtMovieScore.text);
-      if (score == null) {
-        result = 2;
-      }
     }
 
     return result;
@@ -65,12 +49,7 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     switch (errorCode) {
       case 1:
         DialogHelpers.showAlertDialog(
-            "Please complete all inputs before saving.", context);
-        break;
-      case 2:
-        DialogHelpers.showAlertDialog(
-            "Whole numbers allowed for numeric inputs only. Please enter a valid number.",
-            context);
+            "Please enter a movie genre before saving.", context);
         break;
       case 99:
         DialogHelpers.showAlertDialog(
@@ -82,8 +61,8 @@ class EditMovieGenreViewModel extends ChangeNotifier {
   // Can the create/insert and update operations be moved so they can be
   // called from the repository directly?
 
-  Future<bool> createNewMovie(BuildContext context) async {
-    print(">>> createNewMovie");
+  Future<bool> createNewMovieGenre(BuildContext context) async {
+    print(">>> createNewMovieGenre");
     bool successResult = true;
     int validationResultCode = validateInputs(context);
     String result = ""; // hope this means new String("")
@@ -91,12 +70,8 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     print(">>> validationResultCode = $validationResultCode");
 
     if (validationResultCode == 0) {
-      int score = int.parse(EditMovieWidgetState.txtMovieScore.text);
-
-      result = MovieRepository.createMovie(
-          EditMovieWidgetState.txtMovieTitle.text.trim(),
-          score,
-          strMovieGenreSelected);
+      result = MovieRepository.createMovieGenre(
+          EditMovieGenreWidgetState.txtMovieGenre.text.trim());
 
       print(">>> result from MovieRepository.createNewMovie = $result");
 
@@ -113,17 +88,15 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     return successResult;
   }
 
-  Future<bool> updateExistingMovie(int updateId, BuildContext context) async {
+  Future<bool> updateExistingMovieGenre(
+      int updateId, BuildContext context) async {
     print(">>> updateExistingMovie");
     bool successResult = true;
 
     int validationResultCode = validateInputs(context);
     if (validationResultCode == 0) {
-      MovieRepository.updateMovie(
-          updateId,
-          EditMovieWidgetState.txtMovieTitle.text,
-          strMovieGenreSelected,
-          EditMovieWidgetState.txtMovieScore.text);
+      MovieRepository.updateMovieGenre(
+          updateId, EditMovieGenreWidgetState.txtMovieGenre.text);
 
       notifyListeners();
       //
@@ -136,8 +109,10 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     return successResult;
   }
 
-  void deleteExistingMovie(int deleteId) {
-    MovieRepository.deleteMovie(deleteId);
+  void deleteExistingMovieGenre(int deleteId) {
+    // First, do a cascading change to all movie entries so they have the default "(No Selection)" value
+
+    MovieRepository.deleteMovieGenre(deleteId);
     //
     // No call to listeners needed; this is a database operation:
     // list on home page will update on return
@@ -158,7 +133,7 @@ class EditMovieGenreViewModel extends ChangeNotifier {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              deleteExistingMovie(eventInx);
+              deleteExistingMovieGenre(eventInx);
               Navigator.pop(context, 'Y');
             },
             child: const Text('Yes, Delete'),
@@ -175,24 +150,14 @@ class EditMovieGenreViewModel extends ChangeNotifier {
     ).then((value) => {if (value == 'Y') Navigator.pop(context, 'Y')});
   }
 
-  void fillInputFields(MovieModel movieModel) {
-    EditMovieWidgetState.txtMovieTitle.text = movieModel.movieTitle.toString();
-    strMovieGenreSelected =
-        movieModel.movieGenre.toString(); // for the drop-down button
-    EditMovieWidgetState.txtMovieScore.text = movieModel.movieScore.toString();
+  void fillInputFields(MovieGenreModel movieGenreModel) {
+    EditMovieGenreWidgetState.txtMovieGenre.text =
+        movieGenreModel.movieGenreName.toString();
     notifyListeners();
   }
 
   void clearInputFields() {
-    EditMovieWidgetState.txtMovieTitle.clear();
-    EditMovieWidgetState.txtMovieScore.clear();
-    // Genre is reset to index 0 each call to "new" item each time the page is opened.
+    EditMovieGenreWidgetState.txtMovieGenre.clear();
     notifyListeners();
-  }
-
-  void updateGenreDropdown(String selectedValue) {
-    print(">>> updateGenreDropdown, selectedValue = $selectedValue");
-    strMovieGenreSelected = selectedValue;
-    notifyListeners(); //   this may be superfluous since setState() actually saves selected index
   }
 }

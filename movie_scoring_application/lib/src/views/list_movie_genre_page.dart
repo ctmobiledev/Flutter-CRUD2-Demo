@@ -2,20 +2,21 @@
 
 import 'package:flutter/material.dart';
 import 'package:movie_scoring_application/src/models/movie_genre_model.dart';
+import 'package:movie_scoring_application/src/util/dialog_helpers.dart';
+import 'package:movie_scoring_application/src/views/edit_movie_genre_page.dart';
 import 'package:provider/provider.dart';
 import 'package:realm/realm.dart';
 
 import '../viewmodels/list_movie_genre_viewmodel.dart';
-import '../viewmodels/main_viewmodel.dart';
 
 import 'edit_movie_genre_page_args.dart';
-import 'edit_movie_page.dart';
-import 'edit_movie_page_args.dart';
 
 import '../models/movie_model.dart';
 import '../models/movie_repository.dart';
 
 import '../util/constants.dart';
+
+double cardHeight = 60.0;
 
 class MovieGenreListWidget extends StatefulWidget {
   const MovieGenreListWidget({super.key});
@@ -29,7 +30,12 @@ class MovieGenreListWidget extends StatefulWidget {
 
 class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
   //
-  static final listMovieGenreVM =
+  // NOTE: this had static final for the declaration and for some reason (maybe the 'final' marking?)
+  // it wasn't allowing dispose() to be called, so processing from ChangeNotifier complained it had
+  // already been disposed/destroyed. Going forward, for lists like this page, use an ordinary declaration
+  // (not a var dynamic, either, the actual type).
+  //
+  MovieGenreListViewModel listMovieGenreVM =
       MovieGenreListViewModel(); // set further down by ChangeNotifyProvider<T>
   //
   LocalConfiguration? config;
@@ -44,7 +50,7 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
   void initState() {
     super.initState();
 
-    print(">>> _HomePageState - initState() fired");
+    print(">>> MovieGenreListWidgetState - initState() fired");
 
     // Init Realm here, as early as possible, should be the very first thing
     //
@@ -57,12 +63,11 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
     config = Configuration.local([MovieModel.schema, MovieGenreModel.schema],
         initialDataCallback: initDataCallback);
     print(">>> config = $config");
-    MovieRepository.realm = Realm(config!);
-    print(">>> MovieRepository.realm = ${MovieRepository.realm.toString()}");
 
-    MovieRepository.realmMovies = MovieRepository.realm.all<MovieModel>();
+    // This was initialized (static) via HomePage; no need to do it again here.
+    //MovieRepository.realm = Realm(config!);
+    //print(">>> MovieRepository.realm = ${MovieRepository.realm.toString()}");
 
-    MovieRepository.generateMovieGenres();
     MovieRepository.realmMovieGenres =
         MovieRepository.realm.all<MovieGenreModel>();
 
@@ -70,7 +75,16 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
     //MovieRepository.deleteAllMovies();
     //generateTestData();
 
-    listMovieGenreVM.refreshMovies(context);
+    listMovieGenreVM.refreshMovieGenres(context);
+  }
+
+  @override
+  void dispose() {
+    // Text controllers were being disposed of here, but for the viewModel
+    // object, they had to be made 'static'. Attempting to dispose of them
+    // on their second, third, etc., uses resulted in an exception. So now
+    // they're left alone.
+    super.dispose();
   }
 
   void initDataCallback(Realm localRealm) {
@@ -79,7 +93,7 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print(">>> HomePage/StatefulWidget - build() fired");
+    print(">>> MovieGenreListWidget/StatefulWidget - build() fired");
     mainContext = context;
     print(">>> mainContext saved");
     return Scaffold(
@@ -96,8 +110,8 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
                 child: Text("New Movie Genre"),
               ),
               PopupMenuItem<int>(
-                value: 2,
-                child: Text("Clear All Movie Genres"),
+                value: 1,
+                child: Text("Reset Movie Genres"),
               ),
             ];
           }, onSelected: (value) {
@@ -106,15 +120,16 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
               // inx of -1 = New, inx > 0 = Edit
               Navigator.pushNamed(
                 context,
-                EditMovieWidget.routeName,
+                EditMovieGenreWidget.routeName,
                 arguments: EditMovieGenreArgs(-1),
-              ).whenComplete(() => listMovieGenreVM.refreshMovies(context));
+              ).whenComplete(
+                  () => listMovieGenreVM.refreshMovieGenres(context));
             } else if (value == 1) {
-              print(">>> Clear All Movie Genres");
+              print(">>> Reset All Movie Genres");
 
               // may need a special index to pass for the onPressed action to follow
               listMovieGenreVM.showConfirmDeleteDialog(
-                  "This will delete all movie genre entries. Are you sure?",
+                  "This will reset all movie genre entries. Are you sure?",
                   context);
             }
           }),
@@ -132,30 +147,40 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
             return Center(
                 child: ListView.builder(
                     key: ValueKey<Object>(triggerRedraw),
-                    itemCount:
-                        MovieRepository.realmMovies.length, // List<Map<...>>
+                    itemCount: MovieRepository
+                        .realmMovieGenres.length, // List<Map<...>>
                     itemBuilder: (context, index) {
                       return GestureDetector(
                         child: Material(
                           color: Colors.blue,
                           child: InkWell(
                             onTap: () {
-                              var inx = MovieRepository.realmMovies[index].id;
-                              print(
-                                  ">>> NAVIGATE TO EDIT SCREEN - tapped inx = $inx");
-                              Navigator.pushNamed(
-                                context,
-                                EditMovieWidget.routeName,
-                                arguments: EditMovieArgs(inx!),
-                              ).whenComplete(
-                                  () => listVM.refreshMovies(context));
+                              // User is not allowed to modify the very top entry, as it's the default
+                              // value indicating no selection has been made.
+                              if (index == 0) {
+                                //
+                                DialogHelpers.showAlertDialog(
+                                    "This entry cannot be changed.", context);
+                              } else {
+                                //
+                                var inx =
+                                    MovieRepository.realmMovieGenres[index].id;
+                                print(
+                                    ">>> NAVIGATE TO EDIT SCREEN - tapped inx = $inx");
+                                Navigator.pushNamed(
+                                  context,
+                                  EditMovieGenreWidget.routeName,
+                                  arguments: EditMovieGenreArgs(inx!),
+                                ).whenComplete(
+                                    () => listVM.refreshMovieGenres(context));
+                              }
                             },
                             child: Card(
                                 color: Colors.transparent,
                                 child: SizedBox(
-                                  height: 100.0,
-                                  child: MovieItemWidget(
-                                      MovieRepository.realmMovies[
+                                  height: cardHeight,
+                                  child: MovieGenreItemWidget(
+                                      MovieRepository.realmMovieGenres[
                                           index]), // pass just one object
                                 )),
                           ),
@@ -167,9 +192,9 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
         onPressed: () {
           Navigator.pushNamed(
             context,
-            EditMovieWidget.routeName,
+            EditMovieGenreWidget.routeName,
             arguments: EditMovieGenreArgs(-1),
-          ).whenComplete(() => listMovieGenreVM.refreshMovies(context));
+          ).whenComplete(() => listMovieGenreVM.refreshMovieGenres(context));
           print(">>> New Movie Genre - FAB");
         },
         backgroundColor: Colors.deepPurple,
@@ -179,17 +204,18 @@ class MovieGenreListWidgetState extends State<MovieGenreListWidget> {
   }
 }
 
-class MovieItemWidget extends StatelessWidget {
+class MovieGenreItemWidget extends StatelessWidget {
   //
   // will not go to VM
   //
-  late final MovieModel _movieModel;
+  late final MovieGenreModel _movieGenreModel;
 
   // Single object passed, output fields look at properties of _movieModel (above)
-  MovieItemWidget(MovieModel movieModel, {Key? key}) : super(key: key) {
+  MovieGenreItemWidget(MovieGenreModel movieGenreModel, {Key? key})
+      : super(key: key) {
     print(
-        ">>> MovieItemWidget constructor - movieModel = ${movieModel.movieTitle}");
-    _movieModel = movieModel;
+        ">>> MovieItemWidget constructor - movieGenreModel = ${movieGenreModel.movieGenreName}");
+    _movieGenreModel = movieGenreModel;
   }
 
   @override
@@ -201,27 +227,15 @@ class MovieItemWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 0.0),
       margin:
           const EdgeInsets.only(left: 30.0, right: 30.0, top: 3.0, bottom: 3.0),
-      height: 300.0,
+      height: cardHeight,
       child: SizedBox(
-        height: 300.0,
+        height: cardHeight,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Title: ${_movieModel.movieTitle}',
-              style: Constants.defaultTextStyle,
-            ),
-            Text(
-              'Genre: ${_movieModel.movieGenre}',
-              style: Constants.defaultTextStyle,
-            ),
-            Text(
-              'Score: ${_movieModel.movieScore}',
-              style: Constants.defaultTextStyle,
-            ),
-            Text(
-              'Entry Date: ${_movieModel.entryTimestamp}',
+              '${_movieGenreModel.movieGenreName}',
               style: Constants.defaultTextStyle,
             ),
           ],

@@ -57,9 +57,17 @@ class MovieRepository {
     return realmMovies;
   }
 
+  static RealmResults<MovieGenreModel> getMovieGenres() {
+    // consider a try/on at some point
+    realmMovieGenres = realm.all<MovieGenreModel>();
+    return realmMovieGenres;
+  }
+
   //
   //****************** MAJOR DATABASE OPERATIONS **********************
   //
+
+  //****************** Movies **********************
 
   static String createMovie(
       String pMovieTitle, int pMovieScore, String pMovieGenre) {
@@ -105,11 +113,27 @@ class MovieRepository {
         .firstWhere((element) => element.id == updateId);
     print(">>> updateMovie - entry found with id = $updateId");
 
+    print(">>> MovieRepository.realm = ${MovieRepository.realm.toString()}");
+
     MovieRepository.realm.write(() {
       movieModelToUpdate.movieTitle = newTitle.trim();
       movieModelToUpdate.movieGenre = newGenre.trim();
       int? score = int.parse(newScore);
       movieModelToUpdate.movieScore = score;
+    });
+  }
+
+  static void updateMoviesDeletedGenre(String deletedGenre) {
+    var moviesToUpdate = MovieRepository.realmMovies
+        .where((element) => element.movieGenre == deletedGenre);
+    print(">>> updateMoviesDeletedGenre - with genre = $deletedGenre");
+    print(">>> count: ${moviesToUpdate.length}}");
+
+    MovieRepository.realm.write(() {
+      for (var m in moviesToUpdate) {
+        m.movieGenre = Constants.noDropdownValueSelected;
+        print(">>> ${m.movieTitle} now has genre of ${m.movieGenre}");
+      }
     });
   }
 
@@ -133,7 +157,98 @@ class MovieRepository {
     print(">>> deleteAllMovies completed");
   }
 
-  // Backup and restore processes
+  //****************** Movies **********************
+
+  static String createMovieGenre(String pMovieGenre) {
+    final today = DateTime.now(); // used for weekday
+
+    int idDateInMs = today.microsecondsSinceEpoch;
+
+    try {
+      var newMovieGenre =
+          MovieGenreModel(id: idDateInMs, movieGenreName: pMovieGenre);
+
+      // 'write' method wraps all Realm operations
+      realm.write(() {
+        realm.add(newMovieGenre);
+      });
+
+      print(">>> insertion completed for $pMovieGenre, id value = $idDateInMs");
+      return "OK";
+    } catch (ex, stk) {
+      // Pass back any error conditions in non-widget classes, let the Widgets dispatch
+      // the results
+      print(">>> createMovieGenre Exception: $ex");
+      print(">>> Stack: $stk");
+      return ex.toString();
+    }
+  }
+
+  static void updateMovieGenre(int updateId, String newGenre) {
+    var movieModelGenreToUpdate = MovieRepository.realmMovieGenres
+        .firstWhere((element) => element.id == updateId);
+    print(">>> updateMovieGenre - entry found with id = $updateId");
+
+    MovieRepository.realm.write(() {
+      movieModelGenreToUpdate.movieGenreName = newGenre.trim();
+    });
+  }
+
+  static void deleteMovieGenre(int deleteId) {
+    var movieModelGenreToDelete = MovieRepository.realmMovieGenres
+        .firstWhere((element) => element.id == deleteId);
+    print(
+        ">>> deleteMovieGenre - entry found with id = $deleteId, genre is ${movieModelGenreToDelete.movieGenreName}");
+    // no refresh of this UI needed; we're leaving
+
+    // First, reset all the movies with the genre to be deleted to the default value
+    MovieRepository.updateMoviesDeletedGenre(
+        movieModelGenreToDelete.movieGenreName.toString());
+
+    MovieRepository.realm.write(() {
+      MovieRepository.realm.delete(movieModelGenreToDelete);
+    });
+  }
+
+  static void deleteAllMovieGenres() {
+    // 'write' method wraps all Realm operations
+    realm.write(() {
+      realm.deleteAll<MovieGenreModel>();
+    });
+
+    print(">>> deleteAllMovieGenres completed");
+  }
+
+  static Future<void> generateMovieGenres() async {
+    print(">>> generateMovieGenres() fired");
+    MovieRepository.realm.write(() {
+      MovieRepository.realm.deleteAll<MovieGenreModel>();
+      // if genre deleted, processing resets all values to 0
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 0, movieGenreName: '(No Selection)'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 1, movieGenreName: 'Comedy'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 2, movieGenreName: 'Drama'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 3, movieGenreName: 'Documentary'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 4, movieGenreName: 'Action'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 5, movieGenreName: 'Rom-Com'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 6, movieGenreName: 'Horror'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 7, movieGenreName: 'Sci-Fi'));
+      MovieRepository.realm
+          .add(MovieGenreModel(id: 8, movieGenreName: 'Other'));
+    });
+  }
+
+  //
+  //****************** BACKUP/RESTORE OPERATIONS **********************
+  //
+
   // For each table/entity, I decided to take a slightly simpler approach:
   // rather than creating the object via the normal way, I'm just wrapping
   // each table - a list - within its own object
@@ -280,28 +395,5 @@ class MovieRepository {
           "Stack: $stk",
           context);
     }
-  }
-
-  static Future<void> generateMovieGenres() async {
-    print(">>> generateMovieGenres() fired");
-    MovieRepository.realm.write(() {
-      MovieRepository.realm.deleteAll<MovieGenreModel>();
-      MovieRepository.realm
-          .add(MovieGenreModel(id: 1, movieGenreName: 'Comedy'));
-      MovieRepository.realm
-          .add(MovieGenreModel(id: 2, movieGenreName: 'Drama'));
-      MovieRepository.realm
-          .add(MovieGenreModel(id: 3, movieGenreName: 'Documentary'));
-      MovieRepository.realm
-          .add(MovieGenreModel(id: 4, movieGenreName: 'Action'));
-      MovieRepository.realm
-          .add(MovieGenreModel(id: 5, movieGenreName: 'Rom-Com'));
-      MovieRepository.realm
-          .add(MovieGenreModel(id: 6, movieGenreName: 'Horror'));
-      MovieRepository.realm
-          .add(MovieGenreModel(id: 7, movieGenreName: 'Sci-Fi'));
-      MovieRepository.realm
-          .add(MovieGenreModel(id: 8, movieGenreName: 'Other'));
-    });
   }
 }

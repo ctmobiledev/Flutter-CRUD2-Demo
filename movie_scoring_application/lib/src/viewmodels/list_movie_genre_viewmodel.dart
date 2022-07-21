@@ -11,14 +11,14 @@ import '../util/dialog_helpers.dart';
 class MovieGenreListViewModel extends ChangeNotifier {
   MovieModel movieModel = MovieModel();
 
-  // notifyListeners() calls = setState() calls
+  // TIP: notifyListeners() calls = setState() calls
 
-  Future<void> refreshMovies(BuildContext context) async {
-    print(">>> refreshMovies() fired");
+  Future<void> refreshMovieGenres(BuildContext context) async {
+    print(">>> refreshMovieGenres() fired");
     print(
         ">>>===================================================================");
 
-    MovieRepository.realmMovies = MovieRepository.getMovies();
+    MovieRepository.realmMovieGenres = MovieRepository.getMovieGenres();
     notifyListeners();
 
     showMessageIfNoEntries(context);
@@ -31,7 +31,7 @@ class MovieGenreListViewModel extends ChangeNotifier {
 
   void checkForEmptyList(BuildContext context) {
     if (MovieRepository.realmMovies.isEmpty) {
-      DialogHelpers.showAlertDialog("No movies entered.", context);
+      DialogHelpers.showAlertDialog("No movie genres entered.", context);
     }
   }
 
@@ -51,7 +51,7 @@ class MovieGenreListViewModel extends ChangeNotifier {
             onPressed: () {
               Navigator.pop(context, 'Y');
             },
-            child: const Text('Yes, Delete All'),
+            child: const Text('Yes, Reset'),
           ),
           TextButton(
             onPressed: () {
@@ -66,7 +66,8 @@ class MovieGenreListViewModel extends ChangeNotifier {
     ).then((value) {
       print(">>> value is $value");
       if (value == 'Y') {
-        MovieRepository.deleteAllMovies();
+        MovieRepository.deleteAllMovieGenres();
+        MovieRepository.generateMovieGenres();
         notifyListeners();
         showMessageIfNoEntries(buildContext);
       }
@@ -75,11 +76,5 @@ class MovieGenreListViewModel extends ChangeNotifier {
 
   Future<void> generateTestData() async {
     print(">>> generateTestData() fired");
-    // a few rows
-    MovieRepository.createMovie("Big", 10, "Comedy");
-    MovieRepository.createMovie("Moonstruck", 10, "Comedy");
-    MovieRepository.createMovie("Broadcast News", 8, "Drama");
-    MovieRepository.createMovie("Ordinary People", 8, "Drama");
-    MovieRepository.createMovie("The Last Word", 7, "Documentary");
   }
 }

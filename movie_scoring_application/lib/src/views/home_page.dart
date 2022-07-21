@@ -61,9 +61,17 @@ class HomePageState extends State<HomePage> {
 
     MovieRepository.realmMovies = MovieRepository.realm.all<MovieModel>();
 
-    MovieRepository.generateMovieGenres();
+    // only call this from MovieGenreListWidget
+    //MovieRepository.generateMovieGenres();
+
     MovieRepository.realmMovieGenres =
         MovieRepository.realm.all<MovieGenreModel>();
+
+    if (MovieRepository.realmMovieGenres.isEmpty) {
+      print(
+          ">>> Movie Genres table is empty; generating default starter values");
+      MovieRepository.generateMovieGenres();
+    }
 
     // Comment out these lines to start with a clean database.
     //MovieRepository.deleteAllMovies();
@@ -153,7 +161,7 @@ class HomePageState extends State<HomePage> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => const MovieGenreListWidget()),
-              );
+              ).whenComplete(() => mainVM.refreshMovies(context));
             }
           }),
         ],

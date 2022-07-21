@@ -18,6 +18,7 @@ class Constants {
     'Other'
   ];
  */
+  static String noDropdownValueSelected = "(No Selection)";
 
   // Styles
   static TextStyle defaultTextStyle = const TextStyle(

@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/views/edit_movie_genre_page.dart';
 
 import 'src/util/constants.dart';
 import 'src/views/edit_movie_page.dart';
@@ -26,6 +27,8 @@ class MovieRatingApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         EditMovieWidget.routeName: (context) => const EditMovieWidget(),
+        EditMovieGenreWidget.routeName: (context) =>
+            const EditMovieGenreWidget(),
       },
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

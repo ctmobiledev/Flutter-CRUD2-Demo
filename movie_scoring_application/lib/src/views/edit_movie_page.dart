@@ -35,6 +35,9 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
 
   //static var txtMovieGenre = TextEditingController();   // replaced with dropdown box
 
+  // This is exactly what I wound up doing in the MovieListGenreWidget file. I had used 'static final'
+  // but the ChangeNotifier class complained the viewModel class had already been disposed of.
+
   EditMovieViewModel editMovieVM = EditMovieViewModel();
 
   int gEventInx = -1;
@@ -75,8 +78,28 @@ class EditMovieWidgetState extends State<EditMovieWidget> {
       txtMovieScore.text = movieModelValues.movieScore.toString();
 
       // And set the dropdown
-      editMovieVM.strMovieGenreSelected =
-          movieModelValues.movieGenre.toString();
+      //editMovieVM.strMovieGenreSelected =
+      //    movieModelValues.movieGenre.toString();
+
+      //
+      // And set the dropdown, BUT...
+      // If the previously selected movie genre has disappeared or been previously deleted,
+      // this resets the dropdown value for this column to the default.
+      //
+      if (EditMovieViewModel.movieGenres
+              .contains(movieModelValues.movieGenre) ==
+          false) {
+        print(
+            ">>> Genre ${movieModelValues.movieGenre} was deleted, replacing with default");
+        // first in the list, MUST have 1 or more!
+        editMovieVM.strMovieGenreSelected = EditMovieViewModel.movieGenres[0];
+        //editMovieVM.strMovieGenreSelected = Constants.noDropdownValueSelected;
+      } else {
+        editMovieVM.strMovieGenreSelected =
+            movieModelValues.movieGenre.toString(); // for the drop-down button
+      }
+
+      //
     } else {
       // no index found (movieId == -1); start with blank fields
       editMovieVM.clearInputFields();

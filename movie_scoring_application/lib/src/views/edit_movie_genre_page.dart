@@ -1,13 +1,12 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:movie_scoring_application/src/viewmodels/edit_movie_genre_viewmodel.dart';
+import 'package:movie_scoring_application/src/views/edit_movie_genre_page_args.dart';
 import 'package:provider/provider.dart';
 
-import '../viewmodels/edit_movie_viewmodel.dart';
 import '../util/constants.dart';
 import '../models/movie_repository.dart';
-
-import 'edit_movie_page_args.dart';
 
 class EditMovieGenreWidget extends StatefulWidget {
   const EditMovieGenreWidget({super.key});
@@ -30,12 +29,11 @@ class EditMovieGenreWidgetState extends State<EditMovieGenreWidget> {
   // NOTE: These had to be marked 'static' because the compiler complained.
   // There just was no other way to pass these in to the VM.
 
-  static var txtMovieTitle = TextEditingController();
-  static var txtMovieScore = TextEditingController();
+  static var txtMovieGenre = TextEditingController();
 
   //static var txtMovieGenre = TextEditingController();   // replaced with dropdown box
 
-  EditMovieViewModel editMovieVM = EditMovieViewModel();
+  EditMovieGenreViewModel editMovieGenreVM = EditMovieGenreViewModel();
 
   int gEventInx = -1;
 
@@ -55,32 +53,31 @@ class EditMovieGenreWidgetState extends State<EditMovieGenreWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as EditMovieArgs;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as EditMovieGenreArgs;
 
-    gEventInx = args.movieId;
+    gEventInx = args.id;
 
     // args.eventInx = if negative, new (insert); if positive int, edit (update)
     // deletes: do after exited screen
-    String title = (args.movieId == -1) ? "New Movie" : "Edit Movie";
+    String title = (args.id == -1) ? "New Movie Genre" : "Edit Movie Genre";
 
     // get previously defined event
-    if (args.movieId > 0) {
-      var movieModelValues = MovieRepository.realmMovies
-          .firstWhere((element) => element.id == args.movieId);
+    if (args.id > 0) {
+      var movieModelGenreValues = MovieRepository.realmMovieGenres
+          .firstWhere((element) => element.id == args.id);
 
-      print(">>> entry found with id = ${args.movieId}");
+      print(">>> entry found with id = ${args.id}");
 
       // Fill the text controllers
-      txtMovieTitle.text = movieModelValues.movieTitle.toString();
-      txtMovieScore.text = movieModelValues.movieScore.toString();
-
-      // And set the dropdown
-      editMovieVM.strMovieGenreSelected =
-          movieModelValues.movieGenre.toString();
+      txtMovieGenre.text = movieModelGenreValues.movieGenreName.toString();
+      //
     } else {
       // no index found (movieId == -1); start with blank fields
-      editMovieVM.clearInputFields();
+      editMovieGenreVM.clearInputFields();
     }
+
+    var moreThanOneEntry = (MovieRepository.realmMovieGenres.length > 1);
 
     return Scaffold(
         appBar: AppBar(
@@ -92,9 +89,9 @@ class EditMovieGenreWidgetState extends State<EditMovieGenreWidget> {
         ),
         body: ChangeNotifierProvider(
           // This viewModel reference must be defined at the top of the class
-          create: (context) => editMovieVM,
+          create: (context) => editMovieGenreVM,
           child: Center(
-            child: Consumer<EditMovieViewModel>(
+            child: Consumer<EditMovieGenreViewModel>(
                 // builder has three arguments - what does the second one actually do?
                 // changing the name doesn't affect anything, it seems, and yet
                 // the print message below returns an actual instance of the viewModel.
@@ -124,7 +121,7 @@ class EditMovieGenreWidgetState extends State<EditMovieGenreWidget> {
                                 Container(
                                   margin: const EdgeInsets.only(bottom: 10.0),
                                   child: Text(
-                                    'Movie Title',
+                                    'Genre',
                                     style: Constants.defaultTextStyle,
                                   ),
                                 ),
@@ -133,91 +130,7 @@ class EditMovieGenreWidgetState extends State<EditMovieGenreWidget> {
                                   child: TextField(
                                     textCapitalization:
                                         TextCapitalization.words,
-                                    controller: txtMovieTitle,
-                                    decoration: Constants.inputDecoration,
-                                    cursorColor: Constants.inputCursorColor,
-                                    style: Constants.blackTextStyle,
-                                  ),
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 10.0),
-                                  child: Text(
-                                    'Genre',
-                                    style: Constants.defaultTextStyle,
-                                  ),
-                                ),
-                                Container(
-                                  height: 60.0,
-                                  margin: const EdgeInsets.only(bottom: 20.0),
-                                  child: StatefulBuilder(
-                                      builder: (context, setState) {
-                                    return Container(
-                                      padding: const EdgeInsets.only(
-                                          left: 10.0, right: 10.0, top: 4.0),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(5.0),
-                                        border: Border.all(
-                                            color: Colors.white,
-                                            style: BorderStyle.none,
-                                            width: 2.00),
-                                      ),
-                                      child: DropdownButton(
-                                          // declared above, was dropdownValue
-                                          underline: Container(
-                                              height: 0, color: Colors.white),
-                                          dropdownColor: Colors.white,
-                                          focusColor: Colors.white,
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(5.0)),
-                                          isExpanded: true,
-                                          value:
-                                              editMovieVM.strMovieGenreSelected,
-                                          // 'value': what the dropdown control assigns selected value to
-                                          items: EditMovieViewModel.movieGenres
-                                              .map<DropdownMenuItem<String>>(
-                                                  (String value) {
-                                            print(
-                                                ">>> DropdownMenuItem before return: ${value.toString()}");
-                                            return DropdownMenuItem<String>(
-                                              value: value,
-                                              child: Text(value),
-                                            );
-                                          }).toList(),
-                                          onChanged: (String? value) {
-                                            //
-                                            // Flaw with Flutter: handling drop-down controls like this.
-                                            // Should be simple but even with a ChangeNotifier in the VM,
-                                            // setState() is still needed here to "hear" a new value for
-                                            // a drop-down selection and update the visual state of the
-                                            // control.
-                                            //
-                                            editMovieVM.strMovieGenreSelected =
-                                                value!;
-                                            print(
-                                                ">>> new value is ${editMovieVM.strMovieGenreSelected}");
-                                            setState(() {
-                                              editMovieVM.updateGenreDropdown(
-                                                  editMovieVM
-                                                      .strMovieGenreSelected);
-                                            });
-                                          }),
-                                    );
-                                  }),
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 10.0),
-                                  child: Text(
-                                    'Score',
-                                    style: Constants.defaultTextStyle,
-                                  ),
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 20.0),
-                                  child: TextField(
-                                    keyboardType: TextInputType.number,
-                                    controller: txtMovieScore,
+                                    controller: txtMovieGenre,
                                     decoration: Constants.inputDecoration,
                                     cursorColor: Constants.inputCursorColor,
                                     style: Constants.blackTextStyle,
@@ -238,18 +151,18 @@ class EditMovieGenreWidgetState extends State<EditMovieGenreWidget> {
                               ElevatedButton(
                                 style: Constants.greenButtonStyle,
                                 onPressed: () async {
-                                  if (args.movieId == -1) {
-                                    var success = await editMovieVM
-                                        .createNewMovie(context);
+                                  if (args.id == -1) {
+                                    var success = await editMovieGenreVM
+                                        .createNewMovieGenre(context);
                                     print(">>> Save/New - success = $success");
                                     if (success) {
                                       Navigator.pop(context);
                                     }
                                   } else {
                                     print(">>> running update and popping");
-                                    var success =
-                                        await editMovieVM.updateExistingMovie(
-                                            args.movieId, context);
+                                    var success = await editMovieGenreVM
+                                        .updateExistingMovieGenre(
+                                            args.id, context);
                                     print(
                                         ">>> Save/Update - success = $success");
                                     if (success) {
@@ -269,16 +182,20 @@ class EditMovieGenreWidgetState extends State<EditMovieGenreWidget> {
                                     style: Constants.buttonTextStyle),
                               ),
                               ElevatedButton(
-                                style: (args.movieId == -1)
+                                style: (args.id == -1 || !moreThanOneEntry)
                                     ? Constants.redButtonDisabledStyle
                                     : Constants.redButtonStyle,
                                 onPressed: () {
                                   print(">>> Delete button pressed");
-                                  if (args.movieId > -1) {
-                                    editMovieVM.showDeleteDialog(
-                                        "Are you sure you mean to delete this entry?",
-                                        args.movieId,
-                                        context);
+                                  print(
+                                      ">>> moreThanOneEntry = $moreThanOneEntry");
+                                  if (moreThanOneEntry) {
+                                    if (args.id > -1) {
+                                      editMovieGenreVM.showDeleteDialog(
+                                          "Are you sure you mean to delete this entry?",
+                                          args.id,
+                                          context);
+                                    }
                                   }
                                 },
                                 child: Text('Delete',

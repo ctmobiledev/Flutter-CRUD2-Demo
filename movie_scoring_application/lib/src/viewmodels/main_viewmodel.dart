@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
-import 'package:movie_scoring_application/src/models/movie_genre_model.dart';
 
 import '../models/movie_model.dart';
 import '../models/movie_repository.dart';
