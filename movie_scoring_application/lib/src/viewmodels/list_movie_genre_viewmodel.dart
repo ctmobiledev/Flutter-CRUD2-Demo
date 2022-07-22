@@ -30,7 +30,11 @@ class MovieGenreListViewModel extends ChangeNotifier {
   }
 
   void checkForEmptyList(BuildContext context) {
-    if (MovieRepository.realmMovies.isEmpty) {
+    //
+    // In actuality, this will never be true, but it's left here if I spin off this page
+    // into another data entity.
+    //
+    if (MovieRepository.realmMovieGenres.isEmpty) {
       DialogHelpers.showAlertDialog("No movie genres entered.", context);
     }
   }
